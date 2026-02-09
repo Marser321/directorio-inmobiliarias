@@ -34,6 +34,8 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import Link from 'next/link'
+import { Pencil } from 'lucide-react'
 
 interface PropertyTableProps {
     properties: any[]
@@ -143,6 +145,12 @@ export function PropertyTable({ properties, agencies }: PropertyTableProps) {
                                 )}
                             </TableCell>
                             <TableCell className="text-right flex items-center justify-end gap-2">
+                                <Button variant="ghost" size="sm" asChild>
+                                    <Link href={`/admin/properties/${property.id}/edit`}>
+                                        <Pencil className="w-4 h-4 mr-1" />
+                                        Editar
+                                    </Link>
+                                </Button>
                                 <Dialog open={open && selectedProperty?.id === property.id} onOpenChange={(isOpen) => {
                                     setOpen(isOpen)
                                     if (isOpen) setSelectedProperty(property)

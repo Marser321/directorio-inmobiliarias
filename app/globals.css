@@ -34,6 +34,13 @@
   --color-gold-light: var(--gold-light);
   --color-gold-dark: var(--gold-dark);
 
+  /* Lifestyle Vibe Colors */
+  --color-vibe-nightlife: #FF6B6B;  /* Coral vibrante */
+  --color-vibe-silence: #4ECDC4;    /* Turquesa sereno */
+  --color-vibe-golf: #2D5016;       /* Verde bosque */
+  --color-vibe-surf: #0077B6;       /* Azul océano */
+  --color-vibe-family: #F4A261;     /* Naranja cálido */
+
   /* Fonts */
   --font-sans: var(--font-inter);
   --font-serif: var(--font-playfair);
@@ -47,6 +54,10 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+
+  /* Cinematic Transitions */
+  --transition-cinematic: 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-smooth: 0.3s ease-out;
 }
 
 :root {

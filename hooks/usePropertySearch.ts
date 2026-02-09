@@ -269,7 +269,7 @@ export function usePropertySearch({ filters, bounds, limit = 50 }: UsePropertySe
             // Try to fetch from Supabase first
             let query = supabase
                 .from("properties")
-                .select("*, locations(name)", { count: "exact" })
+                .select("*, locations(name), location_point_geojson", { count: "exact" })
 
             // Apply filters
             if (filters.query) {
@@ -321,16 +321,54 @@ export function usePropertySearch({ filters, bounds, limit = 50 }: UsePropertySe
 
             if (data && data.length > 0) {
                 // Transform data to include lat/lng (cast due to complex Supabase join types)
-                const transformed = (data as unknown as Property[]).map((p) => ({
-                    ...p,
-                    // Fix legacy paths or broken images
-                    main_image: p.main_image?.startsWith('/images/prop') ? '/images/placeholders/luxury-villa.jpg' : p.main_image,
-                    images: p.images?.map((img: string) => img.startsWith('/images/prop') ? '/images/placeholders/luxury-villa.jpg' : img),
-                    // @Jules: Extract lat/lng from PostGIS location_point when implemented
-                    lat: -34.9 + Math.random() * 0.1 - 0.05,
-                    lng: -54.87 + Math.random() * 0.1 - 0.05,
-                    location_name: (p as unknown as { locations?: { name: string } }).locations?.name || "Punta del Este",
-                }))
+                const transformed = (data as unknown as Property[]).map((p) => {
+                    const locName = (p as unknown as { locations?: { name: string } }).locations?.name || "Punta del Este"
+
+                    // Try to get coordinates from PostGIS data
+                    let realLat: number | undefined;
+                    let realLng: number | undefined;
+
+                    // Handle location_point_geojson from computed column
+                    // PostgREST return from computed column will be the JSON object
+                    const locPoint = (p as any).location_point_geojson as { type: string, coordinates: number[] } | null;
+
+                    if (locPoint && locPoint.type === 'Point' && Array.isArray(locPoint.coordinates)) {
+                        realLng = locPoint.coordinates[0];
+                        realLat = locPoint.coordinates[1];
+                    }
+
+                    if (!realLat && !realLng) {
+                        const loc = p.location as unknown as { type: string, coordinates: number[] } | null;
+                        if (loc && loc.type === 'Point' && Array.isArray(loc.coordinates)) {
+                            realLng = loc.coordinates[0];
+                            realLat = loc.coordinates[1];
+                        }
+                    }
+
+                    // Fallback to deterministic coordinates if no real data
+                    const coords: Record<string, [number, number]> = {
+                        "Punta del Este": [-34.955, -54.935],
+                        "La Barra": [-34.912, -54.858],
+                        "Jose Ignacio": [-34.805, -54.632],
+                        "Manantiales": [-34.885, -54.845],
+                        "Beverly Hills": [-34.925, -54.915],
+                        "Pinares": [-34.905, -54.935],
+                    }
+
+                    const [defaultLat, defaultLng] = coords[locName] || coords["Punta del Este"]
+
+                    return {
+                        ...p,
+                        // Only replace main_image if it's missing or a placeholder, don't overwrite real Supabase URLs
+                        main_image: p.main_image || '/images/placeholders/luxury-villa.jpg',
+                        images: p.images && p.images.length > 0 ? p.images : ['/images/placeholders/luxury-villa.jpg'],
+
+                        // Use real coordinates if available, otherwise fallback
+                        lat: realLat || (defaultLat + (Math.random() * 0.001 - 0.0005)),
+                        lng: realLng || (defaultLng + (Math.random() * 0.001 - 0.0005)),
+                        location_name: locName,
+                    }
+                })
                 setProperties(transformed as PropertyWithLocation[])
                 setTotalCount(count || transformed.length)
             } else {

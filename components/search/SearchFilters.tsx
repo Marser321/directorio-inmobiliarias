@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Slider } from "@/components/ui/slider"
@@ -84,6 +84,14 @@ export function SearchFilters({ className, onClose, isSheet }: SearchFiltersProp
         filters.priceMin || 0,
         filters.priceMax || 10000000,
     ])
+
+    // Sync local price range with filters (e.g., when resetting)
+    useEffect(() => {
+        setLocalPriceRange([
+            filters.priceMin || 0,
+            filters.priceMax || 10000000,
+        ])
+    }, [filters.priceMin, filters.priceMax])
 
     const handlePriceCommit = () => {
         setPriceRange(

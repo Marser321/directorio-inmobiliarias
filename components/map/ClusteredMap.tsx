@@ -129,7 +129,7 @@ function PropertyMarkerPopup({ property }: { property: PropertyWithLocation }) {
                         {formatMarkerPrice(property.price)}
                     </span>
                     <Link
-                        href={`/property/${property.slug}`}
+                        href={`/property/${property.id}`}
                         className="text-xs text-slate-600 hover:text-[#D4AF37] underline"
                     >
                         Ver más →

@@ -12,9 +12,12 @@ export function Header() {
                 </Link>
                 <nav className="flex items-center gap-6 text-sm font-medium">
                     <ActiveLink href="/search">
-                        Propiedades
+                        Venta
                     </ActiveLink>
-                    <ActiveLink href="/map">
+                    <ActiveLink href="/search?status=for_rent">
+                        Alquiler
+                    </ActiveLink>
+                    <ActiveLink href="/explore">
                         Mapa Interactivo
                     </ActiveLink>
                     <ActiveLink href="/partners">

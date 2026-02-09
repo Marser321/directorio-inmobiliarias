@@ -22,13 +22,14 @@ import { getSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { DashboardSkeleton } from '@/components/partners/DashboardSkeleton'
 import { WelcomeOnboarding } from '@/components/partners/WelcomeOnboarding'
 import { ProfileProgress } from '@/components/partners/ProfileProgress'
+import DashboardManager from '@/components/partners/DashboardManager'
 
 // Property type for the table
 interface PropertyRow {
     id: number
     title: string
     slug: string
-    main_image: string | null
+    main_image: string | null // Derived from property_images join
     price: number
     currency: 'USD' | 'UYU'
     status: 'for_sale' | 'for_rent' | 'sold' | 'rented'
@@ -36,6 +37,7 @@ interface PropertyRow {
     bedrooms: number | null
     bathrooms: number | null
     view_count: number
+    property_images?: { url: string }[]
 }
 
 // Stats Card Component
@@ -88,6 +90,11 @@ export default function DashboardPage() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const showCreatedToast = searchParams.get('created') === 'true'
+
+    const [isMounted, setIsMounted] = useState(false)
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
 
     const { user, loading: authLoading } = useAuth()
     const { agency, loading: agencyLoading } = useUserAgency()
@@ -150,12 +157,17 @@ export default function DashboardPage() {
             const supabase = getSupabaseBrowserClient()
             const { data, error } = await supabase
                 .from('properties')
-                .select('id, title, slug, main_image, price, currency, status, is_featured, bedrooms, bathrooms, view_count')
+                .select('id, title, slug, price, currency, status, is_featured, bedrooms, bathrooms, view_count, property_images(url)')
                 .eq('agency_id', agency.id)
                 .order('created_at', { ascending: false })
 
             if (!error && data) {
-                setProperties(data as PropertyRow[])
+                // Map first image to main_image for compatibility with sub-components
+                const formattedData = (data as any[]).map(prop => ({
+                    ...prop,
+                    main_image: prop.property_images?.[0]?.url || null
+                }))
+                setProperties(formattedData as PropertyRow[])
             }
             setLoading(false)
         }
@@ -244,7 +256,7 @@ export default function DashboardPage() {
     }
 
     // Loading state
-    if (authLoading || agencyLoading || loading) {
+    if (!isMounted || authLoading || agencyLoading || loading) {
         return <DashboardSkeleton />
     }
 
@@ -341,46 +353,18 @@ export default function DashboardPage() {
                     <WelcomeOnboarding />
                 ) : (
                     <>
-                        {/* Stats Grid */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 }}
-                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-                        >
-                            <StatCard
-                                icon={Home}
-                                label="Total Propiedades"
-                                value={properties.length}
-                                color="gold"
-                            />
-                            <StatCard
-                                icon={Eye}
-                                label="Vistas del Mes"
-                                value={(agency.total_views || 0).toLocaleString()}
-                                trend="+12% vs mes anterior"
-                                color="blue"
-                            />
-                            <StatCard
-                                icon={Star}
-                                label="Propiedades Destacadas"
-                                value={properties.filter(p => p.is_featured).length}
-                                color="gold"
-                            />
-                            <StatCard
-                                icon={DollarSign}
-                                label="Valor Total Inventario"
-                                value={formatTotalValue(totalValue)}
-                                color="green"
-                            />
-                        </motion.div>
+                        <DashboardManager
+                            role={(user as any)?.role}
+                            agency={agency}
+                            properties={properties}
+                        />
 
                         {/* Properties Table */}
                         <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="glass-card rounded-xl overflow-hidden shadow-2xl shadow-gold/5"
+                            className="glass-card rounded-xl overflow-hidden shadow-2xl shadow-gold/5 mt-8"
                         >
                             <div className="p-5 border-b border-border/50 bg-background/50 backdrop-blur-md">
                                 <div className="flex items-center justify-between">

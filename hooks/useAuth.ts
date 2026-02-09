@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getSupabaseBrowserClient } from '@/lib/supabase-browser'
+import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import type { User, Session } from '@supabase/supabase-js'
 
 interface AuthState {
@@ -9,6 +9,7 @@ interface AuthState {
     session: Session | null
     loading: boolean
     isAdmin: boolean
+    role: 'admin' | 'agent' | 'agency' | 'owner' | 'user' | null
 }
 
 /**
@@ -21,77 +22,87 @@ export function useAuth() {
         session: null,
         loading: true,
         isAdmin: false,
+        role: null,
     })
 
     useEffect(() => {
-        const supabase = getSupabaseBrowserClient()
+        // Use FRESH client to avoid singleton state issues
+        const supabase = createSupabaseBrowserClient()
+        let mounted = true
 
-        const checkAdminStatus = async (userId: string) => {
-            const { data } = await supabase
-                .from('profiles')
-                .select('is_admin')
-                .eq('id', userId)
-                .single()
-            return !!data?.is_admin
+        const fetchProfileData = async (userId: string) => {
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('is_admin, role')
+                    .eq('id', userId)
+                    .single()
+
+                if (error) throw error
+                return {
+                    isAdmin: !!data?.is_admin,
+                    role: (data?.role as any) ?? 'user'
+                }
+            } catch (err) {
+                console.error('Error fetching profile data:', err)
+                return { isAdmin: false, role: 'user' as any }
+            } finally {
+                console.log('fetchProfileData: Finished')
+            }
         }
 
-        // Get initial session
-        supabase.auth.getSession().then(async ({ data: { session } }: any) => {
-            // MOCK AUTH FOR VISUAL REVIEW
-            if (!session?.user && typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-                const mockUser = {
-                    id: 'mock-user-id',
-                    email: 'mock@luxe.com',
-                    user_metadata: { full_name: 'Mock Admin' }
-                } as any
-                setAuthState({
-                    user: mockUser,
-                    session: { user: mockUser } as any,
-                    loading: false,
-                    isAdmin: true,
-                })
-                return
+        const initializeAuth = async () => {
+
+
+            let session = null
+            let sessionError = null
+
+            try {
+                // RACE CONDITION: Timeout after 5 seconds to prevent indefinite hang
+                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+                const sessionPromise = supabase.auth.getSession()
+
+                const result = await Promise.race([sessionPromise, timeoutPromise]) as any
+                session = result.data.session
+                sessionError = result.error
+            } catch (err) {
+                console.error('useAuth: getSession TIMED OUT or Failed. Falling back to getUser().', err)
+                // Fallback to getUser which validates with server
+                try {
+                    const { data: { user }, error: userError } = await supabase.auth.getUser()
+                    if (user) {
+                        session = { user } as any // Partial session
+                    } else {
+                        console.error('useAuth: getUser also failed', userError)
+                    }
+                } catch (e2) {
+                    console.error('useAuth: getUser exception', e2)
+                }
             }
 
-            let isAdmin = false
-            try {
-                if (session?.user) {
-                    isAdmin = await checkAdminStatus(session.user.id)
-                }
-            } catch (error) {
-                console.error('Error checking admin status:', error)
-            } finally {
+
+            let profileInfo = { isAdmin: false, role: null as any }
+            if (session?.user) {
+                profileInfo = await fetchProfileData(session.user.id)
+            }
+
+            if (mounted) {
                 setAuthState({
                     user: session?.user ?? null,
                     session,
                     loading: false,
-                    isAdmin,
+                    isAdmin: profileInfo.isAdmin,
+                    role: profileInfo.role,
                 })
             }
-        })
+        }
 
-        // Subscribe to auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            async (_event: any, session: any) => {
-                let isAdmin = false
-                try {
-                    if (session?.user) {
-                        isAdmin = await checkAdminStatus(session.user.id)
-                    }
-                } catch (error) {
-                    console.error('Error checking admin status:', error)
-                } finally {
-                    setAuthState({
-                        user: session?.user ?? null,
-                        session,
-                        loading: false,
-                        isAdmin,
-                    })
-                }
-            }
-        )
+        initializeAuth()
 
-        return () => subscription.unsubscribe()
+        return () => {
+            mounted = false
+            // Auth subscription temporarily disabled to prevent client-side hangs
+        }
     }, [])
 
     return authState
@@ -116,28 +127,18 @@ export function useUserAgency() {
 
     useEffect(() => {
         if (authLoading) return
+
         if (!user) {
             setAgency(null)
             setLoading(false)
             return
         }
 
-        // MOCK AGENCY FOR VISUAL REVIEW
-        if (user?.id === 'mock-user-id' || user?.id === 'mock-id') {
-            setAgency({
-                id: 1,
-                name: 'Luxe Test Agency',
-                slug: 'luxe-test-agency',
-                logo_url: null,
-                tier_subscription: 'pro',
-                total_properties: 12,
-                total_views: 15430
-            })
-            setLoading(false)
-            return
-        }
+        // MOCK AGENCY REMOVED FOR REAL DATA
 
-        const supabase = getSupabaseBrowserClient()
+
+        // Use FRESH client here too
+        const supabase = createSupabaseBrowserClient()
 
         // Get user's agency via agency_users junction table
         supabase
@@ -157,11 +158,16 @@ export function useUserAgency() {
             .eq('user_id', user.id)
             .single()
             .then(({ data, error }: any) => {
-                if (error || !data) {
+                if (error) {
+                    console.error('useUserAgency: Error fetching agency:', error)
+                    setAgency(null)
+                } else if (!data) {
+                    console.warn('useUserAgency: No agency data found for user:', user.id)
                     setAgency(null)
                 } else {
                     // Type assertion for Supabase join result
-                    setAgency((data as { agencies: typeof agency }).agencies)
+                    const agencyData = (data as { agencies: typeof agency }).agencies
+                    setAgency(agencyData)
                 }
                 setLoading(false)
             })

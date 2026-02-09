@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Bed, Bath, Home, Share, Heart, Phone, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import { AirbnbGallery } from "@/components/luxe/AirbnbGallery";
 import { ParallaxGallery } from "@/components/luxe/ParallaxGallery";
 import { ScrollRevealSection, StickySidebar, FeatureReveal, TextReveal } from "@/components/luxe/ScrollAnimations";
 import { InvestmentPotential } from "@/components/luxe/InvestmentPotential";
@@ -94,14 +95,10 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                 </div>
             </motion.nav>
 
-            {/* PARALLAX GALLERY */}
-            <ParallaxGallery
-                images={images}
-                title={property.title}
-                location={property.location}
-                badge={property.badge}
-                id={property.id}
-            />
+            {/* GALLERY - Airbnb-style 1+4 grid */}
+            <div className="container mx-auto px-6 pt-24 pb-8">
+                <AirbnbGallery images={images} title={property.title} />
+            </div>
 
             {/* MAIN CONTENT */}
             <div className="container mx-auto px-6 py-16">

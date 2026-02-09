@@ -95,8 +95,8 @@ export function LifestyleCategories({ categories = defaultCategories }: Lifestyl
                                         </h3>
 
                                         {category.propertyCount && (
-                                            <p className="text-white/70 text-sm mb-4">
-                                                {category.propertyCount} propiedades
+                                            <p className="text-white/70 text-sm mb-4 italic">
+                                                Colección Exclusiva
                                             </p>
                                         )}
 

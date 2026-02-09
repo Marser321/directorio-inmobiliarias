@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
     Users,
     Search,
@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { ImpersonateButton } from './impersonate-button'
+import { CreateUserDialog } from '@/components/admin/create-user-dialog'
 
 interface Profile {
     id: string
@@ -30,27 +31,24 @@ export default function AdminUsers() {
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState('')
 
-    useEffect(() => {
-        const fetchUsers = async () => {
-            const supabase = getSupabaseBrowserClient()
+    const fetchUsers = useCallback(async () => {
+        const supabase = getSupabaseBrowserClient()
 
-            // Fetch profiles
-            // Note: linking to agencies is complex via Supabase JS joins if not directly related in FK
-            // We'll fetch profiles first, then maybe fetch agency_users to map them if needed
-            // For now, let's just show profiles
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .order('created_at', { ascending: false })
+        // Fetch profiles
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .order('created_at', { ascending: false })
 
-            if (!error && data) {
-                setUsers(data as any[])
-            }
-            setLoading(false)
+        if (!error && data) {
+            setUsers(data as any[])
         }
-
-        fetchUsers()
+        setLoading(false)
     }, [])
+
+    useEffect(() => {
+        fetchUsers()
+    }, [fetchUsers])
 
     const filteredUsers = users.filter(u =>
         (u.full_name || '').toLowerCase().includes(search.toLowerCase()) ||
@@ -68,6 +66,7 @@ export default function AdminUsers() {
                     </h1>
                     <p className="text-muted-foreground">Control de acceso y roles del sistema.</p>
                 </div>
+                <CreateUserDialog onUserCreated={fetchUsers} />
             </div>
 
             {/* Filters */}

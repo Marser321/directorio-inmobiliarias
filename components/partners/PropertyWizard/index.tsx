@@ -124,6 +124,9 @@ export function PropertyWizard({ agencyId, onSuccess, onCancel }: PropertyWizard
         try {
             const supabase = getSupabaseBrowserClient()
 
+            // Get current user for owner_id
+            const { data: { user } } = await supabase.auth.getUser()
+
             // Get form data
             const basicData = basicInfoForm.getValues()
             const locationData = locationForm.getValues()
@@ -158,35 +161,58 @@ export function PropertyWizard({ agencyId, onSuccess, onCancel }: PropertyWizard
                 + '-' + Date.now().toString(36)
 
             // Create property in database
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const { error: insertError } = await (supabase as any).from('properties').insert({
-                title: basicData.title,
-                slug,
-                price: basicData.price,
-                currency: basicData.currency,
-                status: basicData.status,
-                location_id: locationData.location_id,
-                location_point: locationData.latitude && locationData.longitude
-                    ? `POINT(${locationData.longitude} ${locationData.latitude})`
-                    : null,
-                bedrooms: detailsData.bedrooms,
-                bathrooms: detailsData.bathrooms,
-                garage_spaces: detailsData.garage_spaces,
-                built_area: detailsData.built_area,
-                plot_area: detailsData.plot_area || null,
-                description: detailsData.description || null,
-                features: {
-                    type: basicData.property_type,
-                    amenities: detailsData.amenities || [],
-                    address: locationData.address,
-                },
-                main_image: imageUrls[mediaData.main_image_index] || imageUrls[0],
-                images: imageUrls,
-                video_url: mediaData.video_url || null,
-                agency_id: agencyId,
-            })
+            // @Jules: Consider refactoring this to use a stored procedure for atomic insert
+            const { data: propertyData, error: insertError } = await supabase
+                .from('properties')
+                .insert({
+                    title: basicData.title,
+                    slug,
+                    price: basicData.price,
+                    currency: basicData.currency,
+                    status: basicData.status,
+                    location_id: locationData.location_id,
+                    location_point: locationData.latitude && locationData.longitude
+                        ? `POINT(${locationData.longitude} ${locationData.latitude})`
+                        : null,
+                    bedrooms: detailsData.bedrooms,
+                    bathrooms: detailsData.bathrooms,
+                    garage_spaces: detailsData.garage_spaces,
+                    built_area: detailsData.built_area,
+                    plot_area: detailsData.plot_area || null,
+                    description: detailsData.description || null,
+                    features: {
+                        type: basicData.property_type,
+                        amenities: detailsData.amenities || [],
+                        address: locationData.address,
+                    },
+                    images: imageUrls, // Keep for backwards compatibility
+                    video_url: mediaData.video_url || null,
+                    agency_id: agencyId,
+                    owner_id: user?.id || null, // NEW: Set owner for RLS
+                })
+                .select('id')
+                .single()
 
             if (insertError) throw insertError
+
+            // Insert images into property_images table with display_order
+            if (propertyData && imageUrls.length > 0) {
+                const imageInserts = imageUrls.map((url, index) => ({
+                    property_id: propertyData.id,
+                    url,
+                    display_order: index,
+                    caption: index === mediaData.main_image_index ? 'Imagen Principal' : null,
+                }))
+
+                const { error: imagesError } = await supabase
+                    .from('property_images')
+                    .insert(imageInserts)
+
+                if (imagesError) {
+                    console.error('Error inserting images:', imagesError)
+                    // Don't throw - property was created, images are in array fallback
+                }
+            }
 
             // Success!
             onSuccess?.()

@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import { Inter, Playfair_Display } from 'next/font/google';
+import 'leaflet/dist/leaflet.css';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { SearchDialog } from '@/components/search/SearchDialog';
 import { SmoothScroll } from '@/components/luxe/SmoothScroll';
-import { CustomCursor } from '@/components/luxe/CustomCursor';
 import { Toaster } from '@/components/ui/sonner';
 
 const fontSans = Inter({
@@ -73,7 +73,6 @@ export default function RootLayout({
         )}
       >
         <SmoothScroll />
-        <CustomCursor />
         <SearchDialog />
         <Toaster />
         {children}

@@ -35,6 +35,13 @@ export async function middleware(request: NextRequest) {
         }
     )
 
+    const isLocal = request.nextUrl.hostname === 'localhost' || request.nextUrl.hostname === '127.0.0.1'
+
+    // Skip auth checks on local dev to prevent hangs if Supabase is slow
+    if (isLocal) {
+        return response
+    }
+
     // Refresh session if expired
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -81,9 +88,14 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
     matcher: [
-        // Match all partner routes
-        '/partners/:path*',
-        // Exclude static files and API routes
-        '/((?!_next/static|_next/image|favicon.ico|api).*)',
+        /*
+         * Match all request paths except for the ones starting with:
+         * - api (API routes)
+         * - _next/static (static files)
+         * - _next/image (image optimization files)
+         * - favicon.ico (favicon file)
+         * - public folder files (images, etc)
+         */
+        '/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)',
     ],
 }

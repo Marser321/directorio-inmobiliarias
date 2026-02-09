@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import { DebugLogger } from '@/components/DebugLogger'
 
 export const metadata: Metadata = {
     title: 'Portal de Partners | Luxe Estate',
@@ -30,6 +31,6 @@ export default function PartnersLayout({
             <main className="pt-16">
                 {children}
             </main>
-        </div>
+        </div >
     )
 }

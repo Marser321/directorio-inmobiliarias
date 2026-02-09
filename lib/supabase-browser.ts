@@ -8,10 +8,20 @@ import { Database } from '@/types/database.types'
  * Uses cookie-based authentication for session persistence.
  */
 export function createSupabaseBrowserClient() {
-    return createBrowserClient<Database>(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    ) as any
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    console.log('Supabase Browser Client Init:', {
+        url,
+        keyLength: key?.length,
+        hasKey: !!key
+    })
+
+    if (!url || !key) {
+        console.error('Supabase Browser Client: Missing URL or Key!')
+    }
+
+    return createBrowserClient<Database>(url!, key!) as any
 }
 
 // Singleton instance for use across the app
