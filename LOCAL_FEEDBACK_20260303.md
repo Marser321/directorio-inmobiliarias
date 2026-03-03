@@ -151,3 +151,23 @@ Evidencia:
 - `.migration-evidence/geo_legal_score_node20_test_schema.log`
 - `.migration-evidence/geo_legal_score_node20_test_full.log`
 - `.migration-evidence/geo_legal_score_node20_smoke.log`
+
+## Verificación Release Readiness Auth/Flags (2026-03-03)
+
+| ID | Ruta | Problema observado | Severidad (P0-P3) | Propuesta |
+|---|---|---|---|---|
+| FB-035 | `https://directorio-inmobiliarias-deploy-177.vercel.app/api/auth/signup` | `503 Auth feature is disabled` al registrar inmobiliaria por flags mal parseadas en runtime. | P0 | Resuelto: saneamiento de env en Vercel + parser centralizado en código + redeploy controlado. |
+| FB-036 | `https://directorio-inmobiliarias-deploy-177.vercel.app/api/health/config` | Flags en `false` y `NEXT_PUBLIC_APP_URL` con salto de línea (`\\n`) por serialización corrupta. | P0 | Resuelto: `sync-env` reproducible y validación `env pull` post-carga; health ahora reporta flags `true` y `envDiagnostics.malformedCount=0`. |
+| FB-037 | Endpoints feature-gated (`/api/compare`, `/api/insights/zones`, `/api/agencies/value-score`) | Estado `503` por deshabilitación incorrecta de features. | P0 | Resuelto: comportamiento funcional esperado tras remediación (`400/200` según payload/entrada). |
+| FB-038 | `GET /api/geo/cadastre/lookup` | `503` intermitente observado por `provider_error` externo aun con flags correctas. | P1 | Parcial: no bloquea auth/onboarding; abrir hardening de proveedor (retry/backoff + observabilidad) en backlog. |
+
+### Evidencia técnica (release readiness auth/flags)
+- `.migration-evidence/prod_audit_auth_flags_cp0_api_health_config_20260303T210820Z.txt`
+- `.migration-evidence/prod_audit_auth_flags_cp0_api_auth_signup_post_20260303T211511Z.txt`
+- `.migration-evidence/prod_audit_auth_flags_cp6_prod_health_after_deploy_20260303T213842Z.txt`
+- `.migration-evidence/prod_audit_auth_flags_cp6_prod_signup_after_deploy_20260303T213842Z.txt`
+- `.migration-evidence/prod_audit_auth_flags_cp6_prod_compare_after_deploy_20260303T213842Z.txt`
+- `.migration-evidence/prod_audit_auth_flags_cp6_prod_insights_after_deploy_20260303T213842Z.txt`
+- `.migration-evidence/prod_audit_auth_flags_cp6_prod_value_score_after_deploy_20260303T213842Z.txt`
+- `.migration-evidence/prod_audit_auth_flags_cp6_prod_geo_after_deploy_20260303T213842Z.txt`
+- `.migration-evidence/prod_audit_auth_flags_cp6_prod_deploy_20260303T213645Z.log`

@@ -8,6 +8,7 @@ import { CompareTray } from '@/components/search/CompareTray';
 import { SmoothScroll } from '@/components/luxe/SmoothScroll';
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/auth-context';
+import { parseBooleanEnv } from '@/lib/env/normalize';
 
 const fontSans = Inter({
   subsets: ['latin'],
@@ -66,7 +67,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const isThemeLabEditorial = process.env.FEATURE_THEME_LAB_EDITORIAL === 'true'
+  const isThemeLabEditorial = parseBooleanEnv(process.env.FEATURE_THEME_LAB_EDITORIAL, false).value
 
   return (
     <html lang="es" suppressHydrationWarning>

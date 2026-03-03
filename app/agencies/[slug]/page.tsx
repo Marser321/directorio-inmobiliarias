@@ -22,6 +22,7 @@ import {
   Youtube,
 } from 'lucide-react'
 import { buildAgencyValueScore } from '@/lib/scoring/agency-value'
+import { parseBooleanEnv, readRequiredEnv } from '@/lib/env/normalize'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -178,10 +179,12 @@ function normalizeWhatsapp(raw: string) {
 
 async function getAgency(slug: string) {
   const cookieStore = await cookies()
+  const baseUrl = readRequiredEnv('NEXT_PUBLIC_INSFORGE_BASE_URL')
+  const anonKey = readRequiredEnv('NEXT_PUBLIC_INSFORGE_ANON_KEY')
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_INSFORGE_BASE_URL!,
-    process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY!,
+    baseUrl,
+    anonKey,
     {
       cookies: {
         getAll() {
@@ -216,7 +219,7 @@ async function getAgency(slug: string) {
     .map((row: unknown) => normalizePropertyRow((row || {}) as Record<string, unknown>))
     .filter((property: AgencyProperty) => property.id > 0)
 
-  const valueScoreEnabled = process.env.FEATURE_AGENCY_VALUE_SCORE === 'true'
+  const valueScoreEnabled = parseBooleanEnv(process.env.FEATURE_AGENCY_VALUE_SCORE, false).value
   let valueScore = null
 
   if (valueScoreEnabled) {

@@ -3,6 +3,7 @@ import { createInsforgeClient } from '@/lib/insforge/client'
 import { setInsforgeAccessCookie } from '@/lib/insforge/cookies'
 import { getInsforgeEnv } from '@/lib/insforge/env'
 import { asCompatAuth, getErrorMessage } from '@/lib/insforge/compat'
+import { parseBooleanEnv } from '@/lib/env/normalize'
 import type { AuthSignupDto } from '@/types/domain'
 
 export async function POST(request: Request) {
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
-    const skipEmailVerification = process.env.FEATURE_SKIP_EMAIL_VERIFICATION === 'true'
+    const skipEmailVerification = parseBooleanEnv(process.env.FEATURE_SKIP_EMAIL_VERIFICATION, false).value
     const requiresVerification = Boolean(signUpData?.requireEmailVerification)
     const signUpAccessToken =
       signUpData?.accessToken || signUpData?.session?.accessToken || signUpData?.session?.access_token || null

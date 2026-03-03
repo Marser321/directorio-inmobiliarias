@@ -45,3 +45,6 @@ next-env.d.ts
 # agents
 .agent/
 .antigravity/
+
+# local audit evidence
+.migration-evidence/

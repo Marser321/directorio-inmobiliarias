@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createInsforgeServerClient, getServerUser } from '@/lib/insforge/server'
 import { getInsforgeEnv } from '@/lib/insforge/env'
 import { asCompatDatabase } from '@/lib/insforge/compat'
+import { parseBooleanEnv } from '@/lib/env/normalize'
 
 type ProfileRow = Record<string, unknown>
 
@@ -59,25 +60,25 @@ type AgencyContextPayload = {
 
 function mapFeatureFlags(): FeatureFlagsPayload {
   return {
-    properties: process.env.FEATURE_INSFORGE_PROPERTIES === 'true',
-    scraper: process.env.FEATURE_INSFORGE_SCRAPER === 'true',
-    marketing: process.env.FEATURE_INSFORGE_MARKETING === 'true',
-    manager: process.env.FEATURE_INSFORGE_MANAGER === 'true',
-    adminImpersonation: process.env.FEATURE_ADMIN_IMPERSONATION === 'true',
-    searchApiV2: process.env.FEATURE_SEARCH_API_V2 !== 'false',
-    funnelEvents: process.env.FEATURE_FUNNEL_EVENTS !== 'false',
-    partnerDraftFlow: process.env.FEATURE_PARTNER_DRAFT_FLOW !== 'false',
-    leadFormFallback: process.env.FEATURE_LEAD_FORM_FALLBACK !== 'false',
-    addressGeocoding: process.env.FEATURE_ADDRESS_GEOCODING !== 'false',
-    compare: process.env.FEATURE_COMPARE === 'true',
-    favoritesSync: process.env.FEATURE_FAVORITES_SYNC === 'true',
-    savedSearch: process.env.FEATURE_SAVED_SEARCH === 'true',
-    whatsappAlerts: process.env.FEATURE_WHATSAPP_ALERTS === 'true',
-    zoneInsights: process.env.FEATURE_ZONE_INSIGHTS === 'true',
-    themeLabEditorial: process.env.FEATURE_THEME_LAB_EDITORIAL === 'true',
-    geocatastroLookup: process.env.FEATURE_GEOCATASTRO_LOOKUP === 'true',
-    legalCommissionGuide: process.env.FEATURE_LEGAL_COMMISSION_GUIDE === 'true',
-    agencyValueScore: process.env.FEATURE_AGENCY_VALUE_SCORE === 'true',
+    properties: parseBooleanEnv(process.env.FEATURE_INSFORGE_PROPERTIES, false).value,
+    scraper: parseBooleanEnv(process.env.FEATURE_INSFORGE_SCRAPER, false).value,
+    marketing: parseBooleanEnv(process.env.FEATURE_INSFORGE_MARKETING, false).value,
+    manager: parseBooleanEnv(process.env.FEATURE_INSFORGE_MANAGER, false).value,
+    adminImpersonation: parseBooleanEnv(process.env.FEATURE_ADMIN_IMPERSONATION, false).value,
+    searchApiV2: parseBooleanEnv(process.env.FEATURE_SEARCH_API_V2, true).value,
+    funnelEvents: parseBooleanEnv(process.env.FEATURE_FUNNEL_EVENTS, true).value,
+    partnerDraftFlow: parseBooleanEnv(process.env.FEATURE_PARTNER_DRAFT_FLOW, true).value,
+    leadFormFallback: parseBooleanEnv(process.env.FEATURE_LEAD_FORM_FALLBACK, true).value,
+    addressGeocoding: parseBooleanEnv(process.env.FEATURE_ADDRESS_GEOCODING, true).value,
+    compare: parseBooleanEnv(process.env.FEATURE_COMPARE, false).value,
+    favoritesSync: parseBooleanEnv(process.env.FEATURE_FAVORITES_SYNC, false).value,
+    savedSearch: parseBooleanEnv(process.env.FEATURE_SAVED_SEARCH, false).value,
+    whatsappAlerts: parseBooleanEnv(process.env.FEATURE_WHATSAPP_ALERTS, false).value,
+    zoneInsights: parseBooleanEnv(process.env.FEATURE_ZONE_INSIGHTS, false).value,
+    themeLabEditorial: parseBooleanEnv(process.env.FEATURE_THEME_LAB_EDITORIAL, false).value,
+    geocatastroLookup: parseBooleanEnv(process.env.FEATURE_GEOCATASTRO_LOOKUP, false).value,
+    legalCommissionGuide: parseBooleanEnv(process.env.FEATURE_LEGAL_COMMISSION_GUIDE, false).value,
+    agencyValueScore: parseBooleanEnv(process.env.FEATURE_AGENCY_VALUE_SCORE, false).value,
   }
 }
 

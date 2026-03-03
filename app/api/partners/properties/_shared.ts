@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { asCompatDatabase, type CompatDatabase, type CompatError } from '@/lib/insforge/compat'
 import { createInsforgeServerClient, getServerUser } from '@/lib/insforge/server'
+import { normalizeEnvValue, parseBooleanEnv } from '@/lib/env/normalize'
 
 const PROPERTY_STATUSES = ['for_sale', 'for_rent', 'sold', 'rented', 'reserved'] as const
 const PUBLICATION_STATUSES = ['draft', 'pending_review', 'published', 'archived'] as const
@@ -28,13 +29,8 @@ type GeocodeCacheEntry = {
 
 const geocodeCache = new Map<string, GeocodeCacheEntry>()
 
-function asBool(value: string | undefined, fallback = false) {
-  if (value === undefined) return fallback
-  return value.toLowerCase() === 'true'
-}
-
 function isAddressGeocodingEnabled() {
-  return asBool(process.env.FEATURE_ADDRESS_GEOCODING, true)
+  return parseBooleanEnv(process.env.FEATURE_ADDRESS_GEOCODING, true).value
 }
 
 const optionalUrlSchema = z.union([z.string().trim().url(), z.literal(''), z.null()]).optional()
@@ -289,7 +285,7 @@ function buildGeocodeCacheKey(query: string) {
 }
 
 function getGeocoderUserAgent() {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const appUrl = normalizeEnvValue(process.env.NEXT_PUBLIC_APP_URL) || 'http://localhost:3000'
   return `luxe-estate-geocoder/1.0 (+${appUrl})`
 }
 

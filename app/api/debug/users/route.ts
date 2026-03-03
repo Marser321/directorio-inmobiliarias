@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server'
 import { createInsforgeServerClient, getServerUser } from '@/lib/insforge/server'
 import { asCompatDatabase } from '@/lib/insforge/compat'
 import { createAdminClient } from '@/utils/supabase/admin'
+import { parseBooleanEnv } from '@/lib/env/normalize'
 
-const DEBUG_ROUTE_FLAG = process.env.FEATURE_DEBUG_USERS_ROUTE === 'true'
+const DEBUG_ROUTE_FLAG = parseBooleanEnv(process.env.FEATURE_DEBUG_USERS_ROUTE, false).value
 
 async function requireAdminSession() {
   const { user } = await getServerUser()

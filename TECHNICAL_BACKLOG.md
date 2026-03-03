@@ -193,6 +193,34 @@
   - calibración trimestral de pesos de score (`cost/transparency/operational`)
   - tablero de auditoría de cambios en comisión por agencia (quién/cuándo/qué)
 
+### TB-018
+- Priority: `P0`
+- Labels: `release`, `env`, `auth`
+- Status: `fixed`
+- Owner: `platform`
+- Date: `2026-03-03`
+- Context: producción quedó con flags/keys mal serializadas en Vercel (`\"true\\n\"`), lo que deshabilitó `auth` y endpoints feature-gated.
+- Expected impact: elimina bloqueantes de signup/onboarding por drift de entorno.
+- Risk: low/medium (riesgo operacional reaparece si se vuelve a cargar env por método no saneado).
+- Acceptance criteria:
+  - `/api/health/config` reporta flags habilitadas y `envDiagnostics.malformedCount=0`
+  - `/api/auth/signup` deja de responder `503` por feature flag
+  - existe flujo reproducible de carga env con validación pre/post
+
+### TB-019
+- Priority: `P1`
+- Labels: `geo`, `reliability`, `api`
+- Status: `open`
+- Owner: `backend`
+- Date: `2026-03-03`
+- Context: `GET /api/geo/cadastre/lookup` devuelve `503` intermitente por `provider_error` del proveedor externo (ArcGIS/Geocatastro), aunque el flag está habilitado.
+- Expected impact: reduce errores técnicos en lookup catastral y mejora confianza del comparador/ficha.
+- Risk: medium (dependencia de tercero y límites de rate/latencia).
+- Acceptance criteria:
+  - retry/backoff y clasificación de errores implementada
+  - fallback UX consistente con `data:null` cuando corresponda
+  - métrica operativa de disponibilidad/latencia en dashboard manager
+
 ## Theme Lab Acceptance Checklist (2026-03-03)
 - [ ] Flag `FEATURE_THEME_LAB_EDITORIAL` OFF mantiene baseline intacto en `/`, `/search`, `/property/[id]`.
 - [ ] Flag `FEATURE_THEME_LAB_EDITORIAL` ON aplica capas editoriales y tokens semánticos en las 3 rutas foco.

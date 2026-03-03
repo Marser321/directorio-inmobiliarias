@@ -5,6 +5,8 @@
   "scripts": {
     "check:env": "node scripts/check-env.mjs --require-public --warn-server",
     "check:env:strict": "node scripts/check-env.mjs --require-public --require-server",
+    "vercel:env:sync": "node scripts/vercel/sync-env.mjs",
+    "vercel:env:validate": "node scripts/vercel/validate-env-file.mjs",
     "predev": "node scripts/check-env.mjs --require-public --warn-server --context dev",
     "dev": "next dev --webpack",
     "build": "next build",
@@ -18,6 +20,8 @@
     "test:unit": "node --import tsx --test scripts/tests/search-ranking.unit.test.ts scripts/tests/partner-checklist.unit.test.ts scripts/tests/partner-coordinate-resolution.unit.test.ts scripts/tests/agency-value-score.unit.test.ts scripts/tests/geocatastro-client.unit.test.ts",
     "test:integration": "node --import tsx --test scripts/tests/search-api.integration.test.ts scripts/tests/funnel-lead.integration.test.ts",
     "test:perf:search": "node scripts/perf-search-api.mjs",
+    "soak:critical": "node scripts/soak-critical-endpoints.mjs",
+    "soak:critical:prod": "node scripts/soak-critical-endpoints.mjs --base-url https://directorio-inmobiliarias-deploy-177.vercel.app",
     "pretest:full": "node scripts/check-env.mjs --require-public --warn-server --context test:full",
     "test:full": "node scripts/run-funnel-suite.mjs"
   },
