@@ -1,98 +1,67 @@
 'use server'
 
-import { createClient as createJSClient } from '@supabase/supabase-js'
 import { createClient } from '@/utils/supabase/server'
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
-import { Database } from '@/types/database.types'
+import { createAdminClient } from '@/utils/supabase/admin'
 
-// Initialize Supabase Admin Client (Service Role)
-// ONLY use this in server actions that are protected by admin checks
-const supabaseAdmin = createJSClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const IMPERSONATION_DISABLED_MESSAGE =
+  'Impersonation is disabled until InsForge provides a supported admin flow for this project.'
 
-/**
- * Validates if the current user is a Super Admin
- */
 async function checkSuperAdmin() {
-    const supabase = await createClient()
+  const supabase = await createClient()
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Unauthorized')
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
 
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', user.id)
-        .single()
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('is_admin, role')
+    .eq('id', user.id)
+    .single<{ is_admin?: boolean; role?: string }>()
 
-    if (!profile?.is_admin) throw new Error('Forbidden: Admin access required')
+  const isAdmin = Boolean(profile?.is_admin || profile?.role === 'platform_admin')
+  if (!isAdmin) throw new Error('Forbidden: Admin access required')
 
-    return user
+  return user
 }
 
-/**
- * Logs an admin action to the database
- */
-export async function logAdminAction(action: string, targetResource: string, details?: any) {
-    try {
-        const user = await checkSuperAdmin()
-
-        await supabaseAdmin.from('admin_logs').insert({
-            admin_id: user.id,
-            action,
-            target_resource: targetResource,
-            details: details ? details : null
-        })
-    } catch (error) {
-        console.error('Failed to log admin action:', error)
-        // Don't throw here to prevent blocking the main action if logging fails
-    }
+function getAdminClientOrNull() {
+  try {
+    return createAdminClient()
+  } catch (error) {
+    console.error('Admin client unavailable:', error)
+    return null
+  }
 }
 
-/**
- * Generates a magic link for impersonating a user
- * @param userId The ID of the user to impersonate
- */
+export async function logAdminAction(action: string, targetResource: string, details?: Record<string, unknown>) {
+  try {
+    const user = await checkSuperAdmin()
+    const adminClient = getAdminClientOrNull()
+    if (!adminClient) return
+
+    await adminClient.from('admin_logs').insert({
+      admin_id: user.id,
+      action,
+      target_resource: targetResource,
+      details: details || null,
+    })
+  } catch (error) {
+    console.error('Failed to log admin action:', error)
+  }
+}
+
 export async function impersonateUser(userId: string) {
-    try {
-        const adminUser = await checkSuperAdmin()
+  try {
+    await checkSuperAdmin()
+    await logAdminAction('impersonation_blocked', `user:${userId}`, {
+      reason: IMPERSONATION_DISABLED_MESSAGE,
+    })
 
-        // 1. Log the impersonation attempt
-        await logAdminAction('impersonate_user', `user:${userId}`, {
-            reason: 'Admin impersonation request'
-        })
-
-        // 2. Generate a magic link for the target user
-        const { data, error } = await supabaseAdmin.auth.admin.generateLink({
-            type: 'magiclink',
-            email: await getUserEmail(userId),
-        })
-
-        if (error) throw error
-
-        // 3. Return the link (in a real app, we might redirect directly)
-        // For security, usually we'd verify the admin's password again here
-
-        if (!data.properties?.action_link) {
-            throw new Error('Failed to generate impersonation link')
-        }
-
-        return { success: true, url: data.properties.action_link }
-
-    } catch (error: any) {
-        console.error('Impersonation failed:', error)
-        return { success: false, error: error.message }
-    }
-}
-
-/**
- * Helper to get user email (since it's not in public.profiles usually)
- */
-async function getUserEmail(userId: string) {
-    const { data: { user }, error } = await supabaseAdmin.auth.admin.getUserById(userId)
-    if (error || !user) throw new Error('User not found')
-    return user.email!
+    return { success: false, error: IMPERSONATION_DISABLED_MESSAGE }
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to impersonate user'
+    return { success: false, error: message }
+  }
 }

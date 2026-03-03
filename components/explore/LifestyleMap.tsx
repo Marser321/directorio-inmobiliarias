@@ -205,6 +205,7 @@ export function LifestyleMap({ properties = [] }: { properties?: Property[] }) {
 
   // Toggle de vibe
   const toggleVibe = useCallback((vibeId: string) => {
+    setHoveredZone(null);
     setActiveVibes(prev => 
       prev.includes(vibeId) 
         ? prev.filter(v => v !== vibeId)
@@ -275,6 +276,7 @@ export function LifestyleMap({ properties = [] }: { properties?: Property[] }) {
               >
                 <Popup>
                   <div className="p-2 min-w-[200px]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img 
                       src={property.main_image} 
                       alt={property.title}
@@ -313,7 +315,7 @@ export function LifestyleMap({ properties = [] }: { properties?: Property[] }) {
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-gold" />
             <span className="text-sm font-medium">
-              {filteredProperties.length} propiedades
+              {filteredProperties.length} propiedades · {activeZones.length} zonas
             </span>
           </div>
         </div>

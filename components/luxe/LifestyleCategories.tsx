@@ -45,7 +45,7 @@ interface LifestyleCategoriesProps {
 
 export function LifestyleCategories({ categories = defaultCategories }: LifestyleCategoriesProps) {
     return (
-        <section className="py-24 bg-muted/30">
+        <section className="py-24 bg-surface-1/45">
             <div className="container mx-auto px-6">
                 {/* Section Header */}
                 <motion.div
@@ -55,10 +55,13 @@ export function LifestyleCategories({ categories = defaultCategories }: Lifestyl
                     transition={{ duration: 0.6 }}
                     className="text-center max-w-2xl mx-auto mb-16"
                 >
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent-gold-strong mb-3">
+                        Colecciones
+                    </p>
                     <h2 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-4">
                         Estilos de Vida
                     </h2>
-                    <div className="h-1 w-20 bg-gradient-to-r from-[#D4AF37] to-[#E8D48A] rounded-full mx-auto mb-6" />
+                    <div className="section-divider-soft mb-6" />
                     <p className="text-muted-foreground text-lg">
                         Explora colecciones curadas según tu forma de vivir
                     </p>
@@ -78,9 +81,11 @@ export function LifestyleCategories({ categories = defaultCategories }: Lifestyl
                                 <article className="group relative h-[400px] rounded-2xl overflow-hidden cursor-pointer">
                                     {/* Background Image */}
                                     <div className="absolute inset-0">
-                                        <img
+                                        <Image
                                             src={category.image}
                                             alt={category.title}
+                                            fill
+                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                         />
                                     </div>
@@ -102,15 +107,15 @@ export function LifestyleCategories({ categories = defaultCategories }: Lifestyl
 
                                         {/* Hover Arrow */}
                                         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                                            <span className="text-[#D4AF37] font-medium text-sm uppercase tracking-wider">
+                                            <span className="text-accent-gold-soft font-medium text-sm uppercase tracking-wider">
                                                 Explorar
                                             </span>
-                                            <ArrowRight className="w-4 h-4 text-[#D4AF37]" />
+                                            <ArrowRight className="w-4 h-4 text-accent-gold-soft" />
                                         </div>
                                     </div>
 
                                     {/* Gold border on hover */}
-                                    <div className="absolute inset-0 border-2 border-[#D4AF37] rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                    <div className="absolute inset-0 border-2 border-accent-gold-soft rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                 </article>
                             </Link>
                         </motion.div>

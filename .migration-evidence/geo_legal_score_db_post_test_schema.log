@@ -1,0 +1,22 @@
+
+> realpde@0.1.0 pretest:schema
+> node scripts/check-env.mjs --require-public --warn-server --context test:schema
+
+[dotenv@17.2.4] injecting env (27) from .env.local -- tip: 🗂️ backup and recover secrets: https://dotenvx.com/ops
+[check-env] Warnings for context "test:schema"
+Warnings:
+- Missing optional privileged variables: STRIPE_WEBHOOK_SECRET
+[check-env] OK (test:schema)
+
+> realpde@0.1.0 test:schema
+> node --import tsx scripts/check-release-schema.ts
+
+[dotenv@17.2.4] injecting env (27) from .env.local -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+OK: properties
+OK: property_media
+OK: search_queries
+OK: service_tiers
+OK: vibe_scores
+OK: stripe_webhook_events
+
+Release schema contract check passed.

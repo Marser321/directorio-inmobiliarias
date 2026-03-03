@@ -3,6 +3,13 @@ import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
+import type { Database } from '@/types/database.types'
+
+type AdminLogWithAdmin = Database['public']['Tables']['admin_logs']['Row'] & {
+    admin?: {
+        full_name?: string | null
+    } | null
+}
 
 export default async function AdminLogsPage() {
     const supabase = await createClient()
@@ -33,6 +40,8 @@ export default async function AdminLogsPage() {
         console.error('Error fetching logs:', error)
     }
 
+    const typedLogs = (logs ?? []) as AdminLogWithAdmin[]
+
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold tracking-tight">Audit Logs</h1>
@@ -54,7 +63,7 @@ export default async function AdminLogsPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {logs?.map((log) => (
+                            {typedLogs.map((log) => (
                                 <TableRow key={log.id}>
                                     <TableCell className="whitespace-nowrap">
                                         {new Date(log.created_at).toLocaleString()}
@@ -77,7 +86,7 @@ export default async function AdminLogsPage() {
                                     </TableCell>
                                 </TableRow>
                             ))}
-                            {(!logs || logs.length === 0) && (
+                            {typedLogs.length === 0 && (
                                 <TableRow>
                                     <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                                         No logs found.

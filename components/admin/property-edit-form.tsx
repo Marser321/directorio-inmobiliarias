@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -16,7 +18,17 @@ import {
 import { createClient } from '@/utils/supabase/client'
 import { updatePropertyAction } from '@/app/actions/update-property-action'
 import { toast } from 'sonner'
-import { Loader2, Upload, X, Home, MapPin, DollarSign } from 'lucide-react'
+import { Loader2, Upload, X, Home, MapPin, DollarSign, Navigation } from 'lucide-react'
+
+const CoordinatePickerMap = dynamic(() => import('@/components/map/CoordinatePickerMap'), {
+    ssr: false,
+    loading: () => <div className="h-64 bg-muted/50 rounded-xl animate-pulse" />,
+})
+
+type GeoPoint = {
+    type?: string
+    coordinates?: unknown[]
+} | null
 
 interface Property {
     id: number
@@ -27,6 +39,10 @@ interface Property {
     currency: string
     status: string
     location_id: number
+    address?: string | null
+    location_lat?: number | null
+    location_lng?: number | null
+    location_point_geojson?: GeoPoint
     agency_id?: number | null
     images?: string[]
     location?: { id: number; name: string }
@@ -35,8 +51,32 @@ interface Property {
 
 interface PropertyEditFormProps {
     property: Property
-    locations: { id: number; name: string; type: string }[]
+    locations: { id: number; name: string; type: string; center_lat?: number | null; center_lng?: number | null }[]
     agencies: { id: number; name: string }[]
+}
+
+function asFiniteNumber(value: unknown) {
+    if (typeof value !== 'number') return null
+    return Number.isFinite(value) ? value : null
+}
+
+function getInitialCoordinates(property: Property) {
+    const directLat = asFiniteNumber(property.location_lat)
+    const directLng = asFiniteNumber(property.location_lng)
+    if (directLat !== null && directLng !== null) {
+        return { latitude: directLat, longitude: directLng }
+    }
+
+    const coords = property.location_point_geojson?.coordinates
+    if (Array.isArray(coords) && coords.length >= 2) {
+        const longitude = asFiniteNumber(coords[0])
+        const latitude = asFiniteNumber(coords[1])
+        if (latitude !== null && longitude !== null) {
+            return { latitude, longitude }
+        }
+    }
+
+    return { latitude: null, longitude: null }
 }
 
 export function PropertyEditForm({ property, locations, agencies }: PropertyEditFormProps) {
@@ -46,6 +86,7 @@ export function PropertyEditForm({ property, locations, agencies }: PropertyEdit
     const [loading, setLoading] = useState(false)
     const [uploading, setUploading] = useState(false)
     const [uploadedImages, setUploadedImages] = useState<string[]>(property.images || [])
+    const initialCoordinates = getInitialCoordinates(property)
 
     const [formData, setFormData] = useState({
         title: property.title || '',
@@ -54,8 +95,62 @@ export function PropertyEditForm({ property, locations, agencies }: PropertyEdit
         currency: property.currency || 'USD',
         status: property.status || 'for_sale',
         location_id: property.location_id || 0,
+        address: property.address || '',
+        latitude: initialCoordinates.latitude as number | null,
+        longitude: initialCoordinates.longitude as number | null,
         agency_id: property.agency_id || null,
     })
+
+    const selectedLocation = useMemo(
+        () => locations.find((location) => location.id === formData.location_id),
+        [locations, formData.location_id]
+    )
+
+    const hasCoordinates =
+        typeof formData.latitude === 'number' &&
+        Number.isFinite(formData.latitude) &&
+        typeof formData.longitude === 'number' &&
+        Number.isFinite(formData.longitude)
+
+    const updateCoordinates = (latitude: number | null, longitude: number | null) => {
+        setFormData((prev) => ({
+            ...prev,
+            latitude,
+            longitude,
+        }))
+    }
+
+    const handleLocationChange = (locationId: number) => {
+        setFormData((prev) => ({
+            ...prev,
+            location_id: locationId,
+        }))
+
+        const nextLocation = locations.find((location) => location.id === locationId)
+        if (
+            typeof nextLocation?.center_lat === 'number' &&
+            Number.isFinite(nextLocation.center_lat) &&
+            typeof nextLocation?.center_lng === 'number' &&
+            Number.isFinite(nextLocation.center_lng)
+        ) {
+            updateCoordinates(nextLocation.center_lat, nextLocation.center_lng)
+        }
+    }
+
+    const applyLocationCentroid = () => {
+        if (
+            typeof selectedLocation?.center_lat === 'number' &&
+            Number.isFinite(selectedLocation.center_lat) &&
+            typeof selectedLocation?.center_lng === 'number' &&
+            Number.isFinite(selectedLocation.center_lng)
+        ) {
+            updateCoordinates(selectedLocation.center_lat, selectedLocation.center_lng)
+            toast.success('Coordenadas actualizadas al centro de la zona.')
+            return
+        }
+
+        toast.error('La zona seleccionada no tiene centro geográfico configurado.')
+    }
 
     // Handle Image Upload
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,21 +167,22 @@ export function PropertyEditForm({ property, locations, agencies }: PropertyEdit
                 const filePath = `${fileName}`
 
                 const { error: uploadError } = await supabase.storage
-                    .from('properties')
+                    .from('property-images')
                     .upload(filePath, file)
 
                 if (uploadError) throw uploadError
 
                 const { data: { publicUrl } } = supabase.storage
-                    .from('properties')
+                    .from('property-images')
                     .getPublicUrl(filePath)
 
                 newUrls.push(publicUrl)
             }
-            setUploadedImages([...uploadedImages, ...newUrls])
+            setUploadedImages((prev) => [...prev, ...newUrls])
             toast.success('Imágenes agregadas')
-        } catch (error: any) {
-            toast.error('Error subiendo imágenes: ' + error.message)
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Error desconocido'
+            toast.error('Error subiendo imágenes: ' + message)
         } finally {
             setUploading(false)
         }
@@ -99,6 +195,7 @@ export function PropertyEditForm({ property, locations, agencies }: PropertyEdit
 
         const result = await updatePropertyAction(property.id, {
             ...formData,
+            address: formData.address.trim() || null,
             images: uploadedImages
         })
 
@@ -208,7 +305,7 @@ export function PropertyEditForm({ property, locations, agencies }: PropertyEdit
                         <Label>Ubicación *</Label>
                         <Select
                             value={formData.location_id.toString()}
-                            onValueChange={(v) => setFormData(prev => ({ ...prev, location_id: Number(v) }))}
+                            onValueChange={(v) => handleLocationChange(Number(v))}
                         >
                             <SelectTrigger>
                                 <SelectValue />
@@ -221,6 +318,15 @@ export function PropertyEditForm({ property, locations, agencies }: PropertyEdit
                                 ))}
                             </SelectContent>
                         </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="address">Dirección / Referencia</Label>
+                        <Input
+                            id="address"
+                            placeholder="Ej: Rambla Lorenzo Batlle Pacheco 123"
+                            value={formData.address}
+                            onChange={(event) => setFormData((prev) => ({ ...prev, address: event.target.value }))}
+                        />
                     </div>
                     <div className="space-y-2">
                         <Label>Agencia</Label>
@@ -241,6 +347,80 @@ export function PropertyEditForm({ property, locations, agencies }: PropertyEdit
                             </SelectContent>
                         </Select>
                     </div>
+                </div>
+
+                <div className="mt-6 space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <p className="text-sm font-medium text-slate-900">Coordenadas del anuncio</p>
+                        <div className="flex gap-2">
+                            <Button type="button" variant="outline" size="sm" onClick={applyLocationCentroid}>
+                                Usar centro de zona
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => updateCoordinates(null, null)}
+                            >
+                                Limpiar
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="latitude">Latitud</Label>
+                            <Input
+                                id="latitude"
+                                type="number"
+                                step="0.000001"
+                                min="-90"
+                                max="90"
+                                value={formData.latitude ?? ''}
+                                onChange={(event) => {
+                                    const value = event.target.value.trim()
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        latitude: value === '' ? null : Number(value),
+                                    }))
+                                }}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="longitude">Longitud</Label>
+                            <Input
+                                id="longitude"
+                                type="number"
+                                step="0.000001"
+                                min="-180"
+                                max="180"
+                                value={formData.longitude ?? ''}
+                                onChange={(event) => {
+                                    const value = event.target.value.trim()
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        longitude: value === '' ? null : Number(value),
+                                    }))
+                                }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="rounded-xl overflow-hidden border border-border">
+                        <CoordinatePickerMap
+                            latitude={formData.latitude}
+                            longitude={formData.longitude}
+                            onLocationSelect={(latitude, longitude) => updateCoordinates(latitude, longitude)}
+                            className="h-64 w-full"
+                        />
+                    </div>
+
+                    <p className="text-xs text-muted-foreground flex items-center gap-2">
+                        <Navigation className="w-3.5 h-3.5 text-gold" />
+                        {hasCoordinates
+                            ? `Lat ${formData.latitude?.toFixed(6)} / Lng ${formData.longitude?.toFixed(6)}`
+                            : 'Haz clic en el mapa o ingresa coordenadas manualmente.'}
+                    </p>
                 </div>
             </section>
 
@@ -274,7 +454,14 @@ export function PropertyEditForm({ property, locations, agencies }: PropertyEdit
                         <div className="grid grid-cols-4 gap-4">
                             {uploadedImages.map((url, i) => (
                                 <div key={i} className="relative group aspect-square rounded-xl overflow-hidden bg-slate-100">
-                                    <img src={url} alt={`Image ${i + 1}`} className="object-cover w-full h-full" />
+                                    <Image
+                                        src={url}
+                                        alt={`Image ${i + 1}`}
+                                        fill
+                                        unoptimized
+                                        sizes="(max-width: 768px) 50vw, 25vw"
+                                        className="object-cover w-full h-full"
+                                    />
                                     <button
                                         type="button"
                                         onClick={() => setUploadedImages(prev => prev.filter((_, idx) => idx !== i))}

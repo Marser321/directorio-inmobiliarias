@@ -60,8 +60,9 @@ export function CreateAgencyDialog({ onAgencyCreated }: { onAgencyCreated?: () =
             })
             router.refresh()
             onAgencyCreated?.()
-        } catch (error: any) {
-            toast.error('Error al crear inmobiliaria: ' + error.message)
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Error inesperado'
+            toast.error('Error al crear inmobiliaria: ' + message)
         } finally {
             setLoading(false)
         }

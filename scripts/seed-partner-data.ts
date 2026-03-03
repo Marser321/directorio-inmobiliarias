@@ -1,111 +1,101 @@
-import { createClient } from '@supabase/supabase-js'
-import dotenv from 'dotenv'
-import path from 'path'
+import { config } from 'dotenv'
 
-// Load .env.local
-dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
+config({ path: '.env.local' })
 
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    console.error('Missing Supabase env vars')
-    process.exit(1)
-}
-
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
-    {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
-        }
-    }
-)
+import { createAdminClient } from '@/utils/supabase/admin'
 
 async function main() {
-    const targetUserId = 'e46488db-4ba1-4d86-9c86-88928cf606e9'
-    console.log(`Seeding data for user ${targetUserId}...`)
+  const supabase = createAdminClient()
 
-    // 1. Get Agency
-    const { data: agencyUser, error: auError } = await supabase
-        .from('agency_users')
-        .select('agency_id')
-        .eq('user_id', targetUserId)
-        .single()
+  const targetUserId =
+    process.env.TARGET_USER_ID?.trim() || 'e46488db-4ba1-4d86-9c86-88928cf606e9'
+  console.log(`Seeding partner data for user ${targetUserId}...`)
 
-    if (auError || !agencyUser) {
-        console.error('User has no agency link!', auError)
-        return
-    }
+  const { data: membership, error: membershipError } = await supabase
+    .from('agency_memberships')
+    .select('agency_id, role')
+    .eq('user_id', targetUserId)
+    .maybeSingle()
 
-    const agencyId = agencyUser.agency_id
-    console.log(`Agency ID: ${agencyId}`)
+  if (membershipError || !membership?.agency_id) {
+    throw new Error(`User has no agency_memberships row: ${membershipError?.message || 'missing membership'}`)
+  }
 
-    // 2. Update Agency Profile
-    const { error: agencyUpdateError } = await supabase
-        .from('agencies')
-        .update({
-            name: 'Luxe Estate Partners',
-            logo_url: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80',
-            description: 'Agencia líder en propiedades de lujo en Punta del Este.',
-            website: 'https://luxe-estate.com',
-            phone: '+598 99 123 456',
-            address: 'Calle 20 y 24, Punta del Este'
-        })
-        .eq('id', agencyId)
+  const agencyId = membership.agency_id
+  console.log(`Agency ID: ${agencyId}`)
 
-    if (agencyUpdateError) console.error('Failed to update agency:', agencyUpdateError)
-    else console.log('✅ Agency Profile Updated')
+  const { error: agencyUpdateError } = await supabase
+    .from('agencies')
+    .update({
+      name: 'Luxe Estate Partners',
+      logo_url:
+        'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80',
+      description: 'Agencia líder en propiedades de lujo en Punta del Este.',
+      website: 'https://luxe-estate.com',
+      contact_phone: '+598 99 123 456',
+      address: 'Calle 20 y 24, Punta del Este',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', agencyId)
 
-    // 3. Create Dummy Property
-    const dummyProperty = {
-        agency_id: agencyId,
-        title: 'Mansión Vista al Mar',
-        slug: `mansion-vista-mar-${Date.now()}`,
-        description: 'Increíble propiedad con vistas panorámicas al océano, 6 suites de primer nivel y piscina infinita.',
-        price: 3500000,
-        currency: 'USD',
-        status: 'for_sale',
-        bedrooms: 6,
-        bathrooms: 8,
-        built_area: 750,
-        location_id: 1, // Punta del Este
-        is_featured: true,
-        view_count: 156
-    }
+  if (agencyUpdateError) {
+    throw new Error(`Failed to update agency: ${agencyUpdateError.message}`)
+  }
 
-    const { data: prop, error: propError } = await supabase
-        .from('properties')
-        .insert(dummyProperty)
-        .select()
+  console.log('Agency profile updated.')
 
-    if (propError) {
-        console.error('Failed to create property:', propError)
-        return
-    }
+  const dummyProperty = {
+    agency_id: agencyId,
+    owner_id: targetUserId,
+    title: 'Mansión Vista al Mar',
+    slug: `mansion-vista-mar-${Date.now()}`,
+    description:
+      'Increíble propiedad con vistas panorámicas al océano, 6 suites de primer nivel y piscina infinita.',
+    price: 3500000,
+    currency: 'USD',
+    status: 'for_sale',
+    bedrooms: 6,
+    bathrooms: 8,
+    built_area: 750,
+    location_id: 1,
+    is_featured: true,
+    view_count: 156,
+  }
 
-    const propertyId = prop[0].id
-    console.log(`✅ Property Created: ${prop[0].title} (ID: ${propertyId})`)
+  const { data: propertyRows, error: propertyError } = await supabase
+    .from('properties')
+    .insert(dummyProperty)
+    .select('id, title')
 
-    // 4. Insert Images
-    const images = [
-        'https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=2671&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2670&auto=format&fit=crop'
-    ]
+  if (propertyError || !propertyRows?.length) {
+    throw new Error(`Failed to create property: ${propertyError?.message || 'empty insert result'}`)
+  }
 
-    const imageInserts = images.map((url, idx) => ({
-        property_id: propertyId,
-        url: url,
-        display_order: idx
-    }))
+  const propertyId = propertyRows[0].id
+  console.log(`Property created: ${propertyRows[0].title} (ID: ${propertyId})`)
 
-    const { error: imgError } = await supabase
-        .from('property_images')
-        .insert(imageInserts)
+  const images = [
+    'https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=2671&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2670&auto=format&fit=crop',
+  ]
 
-    if (imgError) console.error('Failed to insert images:', imgError)
-    else console.log('✅ Property Images Inserted')
+  const imageInserts = images.map((url, index) => ({
+    property_id: propertyId,
+    url,
+    display_order: index,
+  }))
 
-    console.log('\n🚀 Dashboard Seeded Successfully!')
+  const { error: imageError } = await supabase.from('property_images').insert(imageInserts)
+
+  if (imageError) {
+    throw new Error(`Failed to insert property images: ${imageError.message}`)
+  }
+
+  console.log('Property images inserted.')
+  console.log('Partner seed completed.')
 }
 
-main()
+void main().catch((error: unknown) => {
+  console.error(error instanceof Error ? error.message : String(error))
+  process.exit(1)
+})

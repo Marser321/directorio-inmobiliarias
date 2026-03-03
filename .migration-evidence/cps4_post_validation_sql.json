@@ -1,0 +1,26 @@
+{
+  "persistence": {
+    "content": [
+      {
+        "type": "text",
+        "text": "SQL query executed completed successfully:\n{\n  \"rows\": [\n    {\n      \"property_leads_count\": \"11\",\n      \"user_funnel_events_count\": \"79\",\n      \"funnel_daily_summary_rows\": \"3\"\n    }\n  ],\n  \"rowCount\": 1,\n  \"fields\": [\n    {\n      \"name\": \"property_leads_count\",\n      \"dataTypeID\": 20\n    },\n    {\n      \"name\": \"user_funnel_events_count\",\n      \"dataTypeID\": 20\n    },\n    {\n      \"name\": \"funnel_daily_summary_rows\",\n      \"dataTypeID\": 20\n    }\n  ]\n}"
+      }
+    ]
+  },
+  "buyerDepthCounts": {
+    "content": [
+      {
+        "type": "text",
+        "text": "SQL query executed completed successfully:\n{\n  \"rows\": [\n    {\n      \"favorites_rows\": \"0\",\n      \"saved_searches_rows\": \"0\",\n      \"deliveries_rows\": \"0\",\n      \"whatsapp_sent_rows\": \"0\"\n    }\n  ],\n  \"rowCount\": 1,\n  \"fields\": [\n    {\n      \"name\": \"favorites_rows\",\n      \"dataTypeID\": 20\n    },\n    {\n      \"name\": \"saved_searches_rows\",\n      \"dataTypeID\": 20\n    },\n    {\n      \"name\": \"deliveries_rows\",\n      \"dataTypeID\": 20\n    },\n    {\n      \"name\": \"whatsapp_sent_rows\",\n      \"dataTypeID\": 20\n    }\n  ]\n}"
+      }
+    ]
+  },
+  "funnelNewEvents": {
+    "content": [
+      {
+        "type": "text",
+        "text": "SQL query executed completed successfully:\n{\n  \"rows\": [],\n  \"rowCount\": 0,\n  \"fields\": [\n    {\n      \"name\": \"event_name\",\n      \"dataTypeID\": 25\n    },\n    {\n      \"name\": \"total\",\n      \"dataTypeID\": 20\n    }\n  ]\n}"
+      }
+    ]
+  }
+}

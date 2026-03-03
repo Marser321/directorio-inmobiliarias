@@ -1,0 +1,9 @@
+[dotenv@17.2.4] injecting env (27) from .env.local -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+OK: properties
+OK: property_media
+OK: search_queries
+OK: service_tiers
+OK: vibe_scores
+OK: stripe_webhook_events
+
+Release schema contract check passed.

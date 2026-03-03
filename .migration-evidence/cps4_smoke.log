@@ -1,0 +1,250 @@
+
+> realpde@0.1.0 presmoke
+> node scripts/check-env.mjs --require-public --warn-server --context smoke
+
+[dotenv@17.2.4] injecting env (23) from .env.local -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+Warnings:
+- Missing optional privileged variables: STRIPE_WEBHOOK_SECRET
+[check-env] OK (smoke)
+
+> realpde@0.1.0 smoke
+> node scripts/audit-links-images-auth.mjs
+
+Audit base URL: http://localhost:3000
+
+=== Pages ===
+[
+  {
+    "path": "/",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/search",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/explore",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/partners",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/partners/login",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/partners/registro",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/demo-antigravity",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/images/placeholders/luxury-estate.jpg",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/images/placeholders/luxury-garden.jpg",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/images/placeholders/luxury-villa.jpg",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/images/placeholders/luxury-pool.jpg",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/images/placeholders/luxury-interior.jpg",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/images/placeholders/luxury-mansion.jpg",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/images/placeholders/luxury-cinema.jpg",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/images/placeholders/luxury-tennis.jpg",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/images/placeholders/luxury-sunset.jpg",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/images/placeholders/luxury-terrace.jpg",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/images/placeholders/luxury-hamptons.jpg",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/images/placeholders/luxury-living.jpg",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/images/placeholders/luxury-penthouse.jpg",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/images/placeholders/luxury-view.jpg",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/lifestyle/beachfront",
+    "status": 307,
+    "location": "/search?q=Lifestyle"
+  },
+  {
+    "path": "/lifestyle/golf",
+    "status": 307,
+    "location": "/search?q=Lifestyle"
+  },
+  {
+    "path": "/lifestyle/urban",
+    "status": 307,
+    "location": "/search?q=Lifestyle"
+  },
+  {
+    "path": "/lifestyle/farm",
+    "status": 307,
+    "location": "/search?q=Lifestyle"
+  },
+  {
+    "path": "/property/3",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/property/1",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/property/12",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/property/8",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/property/6",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/property/2",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/privacidad",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/terminos",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/partners/dashboard",
+    "status": 307,
+    "location": "/partners/login"
+  }
+]
+
+=== Broken Internal Links ===
+[]
+
+=== Broken Images ===
+[]
+
+=== API Checks ===
+[
+  {
+    "path": "/api/auth/me",
+    "method": "GET",
+    "status": 200
+  },
+  {
+    "path": "/api/marketing/tiers",
+    "method": "GET",
+    "status": 200
+  },
+  {
+    "path": "/api/marketing/requests",
+    "method": "GET",
+    "status": 401
+  },
+  {
+    "path": "/api/partners/onboarding",
+    "method": "POST",
+    "status": 401
+  },
+  {
+    "path": "/api/partners/properties",
+    "method": "POST",
+    "status": 401
+  },
+  {
+    "path": "/api/stripe/checkout/featured",
+    "method": "POST",
+    "status": 401
+  },
+  {
+    "path": "/api/stripe/checkout/subscription",
+    "method": "POST",
+    "status": 401
+  },
+  {
+    "path": "/api/stripe/checkout/service-request",
+    "method": "POST",
+    "status": 401
+  }
+]
+
+=== API Failures ===
+[]
+
+=== Summary ===
+{
+  "pagesVisited": 34,
+  "internalLinksChecked": 32,
+  "imagesChecked": 23,
+  "brokenLinks": 0,
+  "brokenImages": 0,
+  "apiFailures": 0
+}

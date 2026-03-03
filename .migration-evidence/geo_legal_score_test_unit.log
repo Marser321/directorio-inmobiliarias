@@ -1,0 +1,28 @@
+
+> realpde@0.1.0 test:unit
+> node --import tsx --test scripts/tests/search-ranking.unit.test.ts scripts/tests/partner-checklist.unit.test.ts scripts/tests/partner-coordinate-resolution.unit.test.ts scripts/tests/agency-value-score.unit.test.ts scripts/tests/geocatastro-client.unit.test.ts
+
+✔ buildAgencyValueScore returns weighted score and breakdown (2.109417ms)
+✔ cost score is lower with higher commission (0.464834ms)
+✔ lookupCadastre normalizes ArcGIS feature response (1.948417ms)
+✔ lookupCadastre returns cache hit for repeated query (0.213416ms)
+✔ checklist passes with complete publish requirements (1.082334ms)
+✔ checklist fails when media count is below minimum (0.102459ms)
+✔ checklist fails when description or location is incomplete (0.074417ms)
+✔ resolvePropertyCoordinates uses manual coordinates first (3.301542ms)
+✔ resolvePropertyCoordinates uses geocoded point before centroid (8.333333ms)
+✔ resolvePropertyCoordinates falls back to centroid when geocoding flag is disabled (0.278083ms)
+✔ resolvePropertyCoordinates returns none when no source is available (0.089625ms)
+✔ featured outranks non-featured when other factors are equal (1.503583ms)
+✔ tie score is stable and resolves by id descending (0.099375ms)
+✔ lifestyle match boosts score when filters are present (0.082959ms)
+✔ price band match influences ranking inside a target range (0.071333ms)
+✔ ranking is deterministic for repeated executions (0.505042ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 815.529042

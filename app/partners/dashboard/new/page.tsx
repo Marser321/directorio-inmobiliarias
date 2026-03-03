@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
 import { PropertyWizard } from '@/components/partners/PropertyWizard'
 import { useUserAgency } from '@/hooks/useAuth'
 
@@ -31,9 +32,9 @@ export default function NewPropertyPage() {
             <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
                 <div className="text-center">
                     <p className="text-muted-foreground mb-4">No tienes una agencia asociada</p>
-                    <a href="/partners/registro" className="text-gold hover:underline">
+                    <Link href="/partners/registro" className="text-gold hover:underline">
                         Registra tu inmobiliaria
-                    </a>
+                    </Link>
                 </div>
             </div>
         )

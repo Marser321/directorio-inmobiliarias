@@ -1,61 +1,82 @@
 'use server'
 
-import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { createInsforgeServerClient, getServerUser } from '@/lib/insforge/server'
+import { getInsforgeEnv } from '@/lib/insforge/env'
+import { asCompatDatabase, getErrorMessage } from '@/lib/insforge/compat'
+
+interface AgencyMembershipRow {
+    agency_id: number
+}
+
+interface ScrapingJobRow {
+    id: string
+}
 
 export async function triggerScraper(agencyUrl: string) {
-    const supabase = await createClient()
+    const env = getInsforgeEnv()
+    const client = await createInsforgeServerClient()
+    const database = asCompatDatabase(client.database)
 
     try {
-        // 1. Check permission (Admin only)
-        const { data: { user } } = await supabase.auth.getUser()
+        if (!env.featureInsforgeScraper) {
+            return { success: false, message: 'Scraper feature flag is disabled' }
+        }
+
+        const { user } = await getServerUser()
         if (!user) throw new Error('Unauthorized')
 
-        // 2. Create detailed log entry
-        const { data: log, error: logError } = await supabase
-            .from('scraping_logs')
-            .insert({
-                agency_url: agencyUrl,
+        const { data: membership } = await database
+            .from('agency_memberships')
+            .select('agency_id')
+            .eq('user_id', user.id)
+            .maybeSingle<AgencyMembershipRow>()
+
+        if (!membership?.agency_id) {
+            throw new Error('User has no agency membership')
+        }
+
+        const { data: job, error: jobError } = await database
+            .from('scraping_jobs')
+            .insert([{
+                agency_id: membership.agency_id,
+                requested_by: user.id,
+                portal_url: agencyUrl,
+                source: 'manual',
                 status: 'pending',
-                properties_count: 0
-            })
+                records_found: 0,
+                records_ingested: 0,
+                started_at: new Date().toISOString(),
+            }])
             .select()
-            .single()
+            .single<ScrapingJobRow>()
 
-        if (logError) throw new Error(logError.message)
+        if (jobError) throw new Error(jobError.message)
+        if (!job?.id) throw new Error('Failed to create scraping job')
 
-        // 3. Call n8n Webhook
-        const n8nUrl = process.env.N8N_SCRAPER_WEBHOOK_URL || 'https://n8n.placeholder.com/webhook/scraper'
-
-        // Don't await this if it takes too long, or await if it returns immediate confirmation
-        // For now we await to ensure it reached n8n
-        const response = await fetch(n8nUrl, {
+        const response = await fetch(`${env.appUrl}/api/scraper/jobs`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                agencyUrl,
-                jobId: log.id, // Send log ID so n8n can report back
-                callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/ingest-properties`
+                portalUrl: agencyUrl,
+                source: 'manual',
+                agencyId: membership.agency_id,
             })
         })
 
         if (!response.ok) {
-            // Mark as failed if n8n doesn't accept
-            await supabase.from('scraping_logs').update({ status: 'failed', error_message: 'n8n connection failed' }).eq('id', log.id)
+            await database
+                .from('scraping_jobs')
+                .update({ status: 'failed', error_message: 'n8n connection failed' })
+                .eq('id', job.id)
             throw new Error('Failed to trigger n8n workflow')
         }
 
-        // 4. Update status to processing
-        await supabase
-            .from('scraping_logs')
-            .update({ status: 'processing' })
-            .eq('id', log.id)
-
         revalidatePath('/admin/scraper')
-        return { success: true, message: 'Scraping started', logId: log.id }
+        return { success: true, message: 'Scraping started', logId: job.id }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Scraper Action Error:', error)
-        return { success: false, message: error.message }
+        return { success: false, message: getErrorMessage(error, 'Failed to trigger scraper') }
     }
 }

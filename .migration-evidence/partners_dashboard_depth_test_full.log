@@ -1,0 +1,67 @@
+
+> realpde@0.1.0 pretest:full
+> node scripts/check-env.mjs --require-public --warn-server --context test:full
+
+[dotenv@17.2.4] injecting env (24) from .env.local -- tip: 👥 sync secrets across teammates & machines: https://dotenvx.com/ops
+[check-env] Warnings for context "test:full"
+Warnings:
+- Missing optional privileged variables: STRIPE_WEBHOOK_SECRET
+[check-env] OK (test:full)
+
+> realpde@0.1.0 test:full
+> node scripts/run-funnel-suite.mjs
+
+✔ compare endpoint contract by feature flag (932.485917ms)
+✔ saved search endpoint contract by feature flag (146.328958ms)
+✔ zone insights endpoint contract by feature flag (736.27225ms)
+✔ funnel endpoint accepts valid public events (985.863792ms)
+✔ funnel endpoint rejects metadata with PII (215.099042ms)
+✔ funnel sequence Search -> Ficha -> WhatsApp is accepted (1072.988958ms)
+✔ lead fallback endpoint creates pending lead (476.652208ms)
+✔ lead fallback validation rejects malformed payload (7.286917ms)
+✔ checklist passes with complete publish requirements (0.429542ms)
+✔ checklist fails when media count is below minimum (0.067625ms)
+✔ checklist fails when description or location is incomplete (0.067333ms)
+✔ resolvePropertyCoordinates uses manual coordinates first (0.745917ms)
+✔ resolvePropertyCoordinates uses geocoded point before centroid (1.877166ms)
+✔ resolvePropertyCoordinates falls back to centroid when geocoding flag is disabled (0.142083ms)
+✔ resolvePropertyCoordinates returns none when no source is available (0.057292ms)
+✔ search API returns contract fields (953.955625ms)
+✔ combined filters enforce constraints (422.858584ms)
+✔ price sorting modes are respected (329.354333ms)
+✔ cursor pagination returns next page without duplicates (322.9645ms)
+✔ search_as_move filters by real map bounds (324.36375ms)
+✔ empty results return valid response shape (177.16525ms)
+✔ featured outranks non-featured when other factors are equal (2.47675ms)
+✔ tie score is stable and resolves by id descending (0.322167ms)
+✔ lifestyle match boosts score when filters are present (0.216292ms)
+✔ price band match influences ranking inside a target range (0.177417ms)
+✔ ranking is deterministic for repeated executions (0.740083ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2956.637833
+{
+  "baseUrl": "http://localhost:3000",
+  "requests": 80,
+  "concurrency": 8,
+  "elapsed_ms": 178.92,
+  "rps": 447.14,
+  "latency_ms": {
+    "min": 2.63,
+    "p50": 14.65,
+    "p95": 41.84,
+    "p99": 42.47,
+    "max": 42.47
+  },
+  "failed_requests": 0,
+  "error_rate": 0,
+  "thresholds": {
+    "p95_ms": 350,
+    "max_error_rate": 0.01
+  }
+}

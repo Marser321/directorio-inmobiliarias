@@ -1,4 +1,4 @@
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient } from '@/lib/insforge/compat-ssr'
 import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { AgencyEditForm } from "@/components/admin/agency-edit-form"
@@ -15,8 +15,8 @@ export default async function EditAgencyPage({ params }: PageProps) {
     const cookieStore = await cookies()
 
     const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        process.env.NEXT_PUBLIC_INSFORGE_BASE_URL!,
+        process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY!,
         {
             cookies: {
                 getAll() {

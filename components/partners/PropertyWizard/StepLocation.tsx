@@ -32,6 +32,11 @@ export function StepLocation({ form }: StepLocationProps) {
 
     const latitude = watch('latitude')
     const longitude = watch('longitude')
+    const hasSelectedCoordinates =
+        typeof latitude === 'number' &&
+        Number.isFinite(latitude) &&
+        typeof longitude === 'number' &&
+        Number.isFinite(longitude)
 
     // Fetch locations from Supabase
     useEffect(() => {
@@ -132,7 +137,7 @@ export function StepLocation({ form }: StepLocationProps) {
                 </div>
 
                 {/* Coordinates Display */}
-                {latitude && longitude && (
+                {hasSelectedCoordinates && (
                     <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}

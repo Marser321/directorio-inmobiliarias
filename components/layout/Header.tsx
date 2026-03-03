@@ -1,7 +1,7 @@
 
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
 import { ActiveLink } from '@/components/luxe/ActiveLink'
+import { AuthCtas } from '@/components/layout/AuthCtas'
 
 export function Header() {
     return (
@@ -24,14 +24,12 @@ export function Header() {
                         Inmobiliarias
                     </ActiveLink>
                 </nav>
-                <div className="flex items-center gap-4">
-                    <Button variant="outline" size="sm">
-                        Publicar Propiedad
-                    </Button>
-                    <Button size="sm">
-                        Iniciar Sesión
-                    </Button>
-                </div>
+                <AuthCtas
+                    loginVariant="default"
+                    publishVariant="outline"
+                    size="sm"
+                    containerClassName="flex items-center gap-4"
+                />
             </div>
         </header>
     )

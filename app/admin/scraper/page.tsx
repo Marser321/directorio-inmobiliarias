@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import { useCallback, useEffect, useMemo, useState, useTransition } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { triggerScraper } from '@/app/actions/scraper'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,14 +10,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { Loader2, Search, ExternalLink, RefreshCw } from 'lucide-react'
-import { useEffect } from 'react'
 
 interface ScrapingLog {
     id: string
-    agency_url: string
-    properties_count: number
+    portal_url: string
+    records_found: number
+    records_ingested: number
     status: 'pending' | 'processing' | 'completed' | 'failed'
-    scraped_at: string
+    created_at: string
     error_message?: string
 }
 
@@ -27,35 +26,13 @@ export default function ScraperPage() {
     const [isPending, startTransition] = useTransition()
     const [logs, setLogs] = useState<ScrapingLog[]>([])
     const [isLoading, setIsLoading] = useState(true)
-    const router = useRouter()
-    const supabase = createClient()
+    const supabase = useMemo(() => createClient(), [])
 
-    // Fetch logs on mount
-    useEffect(() => {
-        fetchLogs()
-
-        // Real-time subscription
-        const channel = supabase
-            .channel('scraping_logs_changes')
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'scraping_logs' },
-                () => {
-                    fetchLogs()
-                }
-            )
-            .subscribe()
-
-        return () => {
-            supabase.removeChannel(channel)
-        }
-    }, [])
-
-    async function fetchLogs() {
+    const fetchLogs = useCallback(async () => {
         const { data, error } = await supabase
-            .from('scraping_logs')
+            .from('scraping_jobs')
             .select('*')
-            .order('scraped_at', { ascending: false })
+            .order('created_at', { ascending: false })
             .limit(20)
 
         if (error) {
@@ -64,7 +41,30 @@ export default function ScraperPage() {
             setLogs(data as ScrapingLog[])
         }
         setIsLoading(false)
-    }
+    }, [supabase])
+
+    // Fetch logs on mount
+    useEffect(() => {
+        queueMicrotask(() => {
+            void fetchLogs()
+        })
+
+        // Real-time subscription
+        const channel = supabase
+            .channel('scraping_jobs_changes')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'scraping_jobs' },
+                () => {
+                    void fetchLogs()
+                }
+            )
+            .subscribe()
+
+        return () => {
+            void supabase.removeChannel(channel)
+        }
+    }, [fetchLogs, supabase])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -110,7 +110,7 @@ export default function ScraperPage() {
                 <CardHeader>
                     <CardTitle>Iniciar Nuevo Escaneo</CardTitle>
                     <CardDescription>
-                        Ingresa la URL de la página de "Propiedades" o "Venta" de la inmobiliaria.
+                        Ingresa la URL de la página de &quot;Propiedades&quot; o &quot;Venta&quot; de la inmobiliaria.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -185,14 +185,14 @@ export default function ScraperPage() {
                                 logs.map((log) => (
                                     <TableRow key={log.id}>
                                         <TableCell className="font-medium text-slate-600">
-                                            {new Date(log.scraped_at).toLocaleDateString()} <br />
+                                            {new Date(log.created_at).toLocaleDateString()} <br />
                                             <span className="text-xs text-slate-400">
-                                                {new Date(log.scraped_at).toLocaleTimeString()}
+                                                {new Date(log.created_at).toLocaleTimeString()}
                                             </span>
                                         </TableCell>
                                         <TableCell>
-                                            <div className="flex items-center gap-2 max-w-[300px] truncate" title={log.agency_url}>
-                                                {log.agency_url}
+                                            <div className="flex items-center gap-2 max-w-[300px] truncate" title={log.portal_url}>
+                                                {log.portal_url}
                                             </div>
                                             {log.error_message && (
                                                 <div className="text-xs text-red-500 mt-1 truncate max-w-[300px]">
@@ -207,11 +207,11 @@ export default function ScraperPage() {
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-right font-bold text-slate-700">
-                                            {log.properties_count}
+                                            {log.records_ingested || log.records_found || 0}
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <Button variant="ghost" size="icon" asChild>
-                                                <a href={log.agency_url} target="_blank" rel="noopener noreferrer">
+                                                <a href={log.portal_url} target="_blank" rel="noopener noreferrer">
                                                     <ExternalLink className="h-4 w-4 text-slate-400" />
                                                 </a>
                                             </Button>

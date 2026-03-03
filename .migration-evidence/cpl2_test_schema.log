@@ -1,0 +1,21 @@
+
+> realpde@0.1.0 pretest:schema
+> node scripts/check-env.mjs --require-public --warn-server --context test:schema
+
+[dotenv@17.2.4] injecting env (23) from .env.local -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+Warnings:
+- Missing optional privileged variables: STRIPE_WEBHOOK_SECRET
+[check-env] OK (test:schema)
+
+> realpde@0.1.0 test:schema
+> node --import tsx scripts/check-release-schema.ts
+
+[dotenv@17.2.4] injecting env (23) from .env.local -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+OK: properties
+OK: property_media
+OK: search_queries
+OK: service_tiers
+OK: vibe_scores
+OK: stripe_webhook_events
+
+Release schema contract check passed.

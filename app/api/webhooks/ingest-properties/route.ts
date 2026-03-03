@@ -1,95 +1,137 @@
-import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { createInsforgeClient } from '@/lib/insforge/client'
+import { getInsforgeEnv } from '@/lib/insforge/env'
+import { asCompatDatabase, getErrorMessage } from '@/lib/insforge/compat'
 
-// Initialize Supabase Admin Client (Service Role)
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false,
-        },
+interface IngestPropertyPayload {
+  title?: string
+  source?: string
+  price?: number
+  currency?: string
+  url?: string
+  images?: string[]
+  address?: string
+  location?: string
+  city?: string
+  description?: string
+  builtArea?: number
+  landArea?: number
+  contactName?: string
+  contactPhone?: string
+}
+
+export async function POST(request: Request) {
+  try {
+    const env = getInsforgeEnv()
+    if (!env.featureInsforgeScraper) {
+      return NextResponse.json({ error: 'Scraper feature is disabled' }, { status: 503 })
     }
-)
 
-export async function POST(req: Request) {
-    try {
-        const body = await req.json()
-        const { agencyUrl, properties, status, jobId } = body
+    const body = await request.json()
+    const { agencyId, properties, status, jobId, callbackAccessToken } = body as {
+      agencyId?: number | string
+      properties?: IngestPropertyPayload[]
+      status?: string
+      jobId?: string
+      callbackAccessToken?: string
+    }
 
-        console.log(`[Ingest] Received ${properties?.length || 0} properties for ${agencyUrl}`)
+    if (env.n8nSharedSecret) {
+      const incomingSecret = request.headers.get('x-webhook-secret')
+      if (incomingSecret !== env.n8nSharedSecret) {
+        return NextResponse.json({ error: 'Unauthorized webhook request' }, { status: 401 })
+      }
+    }
 
-        // 1. Update Log if jobId is provided (from n8n)
-        if (jobId) {
-            const { error: logError } = await supabaseAdmin
-                .from('scraping_logs')
-                .update({
-                    status: status || 'completed',
-                    properties_count: properties?.length || 0,
-                    error_message: null
-                })
-                .eq('id', jobId)
+    const normalizedAgencyId = Number(agencyId)
+    if (!Array.isArray(properties) || !Number.isFinite(normalizedAgencyId) || normalizedAgencyId <= 0) {
+      return NextResponse.json({ error: 'Invalid payload. agencyId and properties[] are required' }, { status: 400 })
+    }
 
-            if (logError) console.error('[Ingest] Failed to update log:', logError)
-        }
+    const accessToken = typeof callbackAccessToken === 'string' && callbackAccessToken.length > 0
+      ? callbackAccessToken
+      : request.headers.get('x-callback-access-token') || undefined
 
-        if (!properties || !Array.isArray(properties)) {
-            return NextResponse.json({ error: 'Invalid properties data' }, { status: 400 })
-        }
+    if (!accessToken) {
+      return NextResponse.json({ error: 'Missing callback access token' }, { status: 401 })
+    }
 
-        // 2. Map properties to DB schema
-        // Assuming n8n sends: { title, price, currency, url, images[], location, ... }
-        const propertiesToUpsert = properties.map((p: any) => ({
-            source: 'other', // or 'agency_scraper'
-            original_url: p.url,
-            url: p.url,
-            title: p.title,
-            address: p.address || p.location,
-            city: p.city || 'Unknown',
-            listed_price: p.price,
-            currency: p.currency || 'USD',
-            images: p.images || [],
-            description: p.description,
-            built_area: p.builtArea,
-            land_area: p.landArea,
-            status: 'new',
-            owner_name: p.contactName,
-            owner_phone: p.contactPhone,
-            meta: {
-                scraped_at: new Date().toISOString(),
-                agency_source: agencyUrl
-            }
-        }))
+    const client = createInsforgeClient({ accessToken })
+    const database = asCompatDatabase(client.database)
 
-        // 3. Upsert into prospect_properties
-        const { data, error } = await supabaseAdmin
-            .from('prospect_properties')
-            .upsert(propertiesToUpsert, {
-                onConflict: 'original_url',
-                ignoreDuplicates: false
-            })
-
-        if (error) {
-            console.error('[Ingest] Database error:', error)
-            // Update log with error
-            if (jobId) {
-                await supabaseAdmin
-                    .from('scraping_logs')
-                    .update({ status: 'failed', error_message: error.message })
-                    .eq('id', jobId)
-            }
-            return NextResponse.json({ error: error.message }, { status: 500 })
-        }
-
-        return NextResponse.json({
-            success: true,
-            count: properties.length,
-            message: 'Properties ingested successfully'
+    if (jobId) {
+      await database
+        .from('scraping_jobs')
+        .update({
+          status: status || 'processing',
+          records_found: properties.length,
+          updated_at: new Date().toISOString(),
         })
-
-    } catch (error: any) {
-        console.error('[Ingest] Unexpected error:', error)
-        return NextResponse.json({ error: error.message }, { status: 500 })
+        .eq('id', jobId)
     }
+
+    const payload = properties.map((property) => ({
+      agency_id: normalizedAgencyId,
+      source: property.source || 'other',
+      original_url: property.url,
+      url: property.url,
+      title: property.title || 'Sin titulo',
+      address: property.address || property.location || null,
+      city: property.city || 'Unknown',
+      listed_price: property.price || 0,
+      currency: property.currency || 'USD',
+      images: property.images || [],
+      description: property.description || null,
+      built_area: property.builtArea || null,
+      land_area: property.landArea || null,
+      status: 'new',
+      owner_name: property.contactName || null,
+      owner_phone: property.contactPhone || null,
+      meta: {
+        scraped_at: new Date().toISOString(),
+      },
+    }))
+
+    const { error } = await database
+      .from('prospect_properties')
+      .upsert(payload, {
+        onConflict: 'original_url',
+        ignoreDuplicates: false,
+      })
+
+    if (error) {
+      if (jobId) {
+        await database
+          .from('scraping_jobs')
+          .update({
+            status: 'failed',
+            error_message: error.message,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', jobId)
+      }
+
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    if (jobId) {
+      await database
+        .from('scraping_jobs')
+        .update({
+          status: status || 'completed',
+          records_ingested: properties.length,
+          completed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', jobId)
+    }
+
+    return NextResponse.json({
+      success: true,
+      upserted: properties.length,
+      failed: 0,
+    })
+  } catch (error: unknown) {
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 })
+  }
 }

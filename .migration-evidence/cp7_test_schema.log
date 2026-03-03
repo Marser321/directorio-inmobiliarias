@@ -1,0 +1,13 @@
+
+> realpde@0.1.0 test:schema
+> node --import tsx scripts/check-release-schema.ts
+
+[dotenv@17.2.4] injecting env (12) from .env.local -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+OK: properties
+OK: property_media
+OK: search_queries
+OK: service_tiers
+OK: vibe_scores
+OK: stripe_webhook_events
+
+Release schema contract check passed.

@@ -1,53 +1,45 @@
+import { createClient } from '@/lib/insforge/compat-supabase'
 
-import { createClient } from '@supabase/supabase-js';
+const BASE_URL = process.env.NEXT_PUBLIC_INSFORGE_BASE_URL
+const ANON_KEY = process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xtvjroywvlzewzmgustk.supabase.co';
-// Using the same service role key as seed_data.ts
-const SUPABASE_SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0dmpyb3l3dmx6ZXd6bWd1c3RrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDI2ODI4MCwiZXhwIjoyMDg1ODQ0MjgwfQ.TqUTRbykfWq4ekBRatovkQN5n7slEeEwfZBVKHXo7XM';
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-const BAD_IMAGE_PART = '2250c38552f7';
-const GOOD_IMAGE_URL = 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=2670&auto=format&fit=crop';
-
-async function fixImage() {
-    console.log('🔧 Starting Image Fix...');
-
-    // 1. Find the property with the bad image
-    const { data: properties, error: fetchError } = await supabase
-        .from('properties')
-        .select('id, title, main_image')
-        .ilike('main_image', `%${BAD_IMAGE_PART}%`);
-
-    if (fetchError) {
-        console.error('❌ Error fetching properties:', fetchError);
-        return;
-    }
-
-    if (!properties || properties.length === 0) {
-        console.log('✅ No broken images found to fix.');
-        return;
-    }
-
-    console.log(`Found ${properties.length} properties with broken images.`);
-
-    // 2. Update them
-    for (const prop of properties) {
-        console.log(`Updating property: ${prop.title} (${prop.id})...`);
-        const { error: updateError } = await supabase
-            .from('properties')
-            .update({ main_image: GOOD_IMAGE_URL })
-            .eq('id', prop.id);
-
-        if (updateError) {
-            console.error(`❌ Failed to update property ${prop.id}:`, updateError);
-        } else {
-            console.log(`✅ Fixed property ${prop.id}`);
-        }
-    }
-
-    // 3. Optional: Deduplicate if we created multiples (Not doing it now to be safe, just fixing the visual bug)
-    console.log('✨ Image fix complete.');
+if (!BASE_URL || !ANON_KEY) {
+  console.error('Missing NEXT_PUBLIC_INSFORGE_BASE_URL or NEXT_PUBLIC_INSFORGE_ANON_KEY')
+  process.exit(1)
 }
 
-fixImage();
+const client = createClient(BASE_URL, ANON_KEY)
+
+async function fixBrokenImage() {
+  const { data: properties, error } = await (client as any)
+    .from('properties')
+    .select('id, title, images')
+    .limit(100)
+
+  if (error) {
+    console.error('Query failed:', error.message)
+    process.exit(1)
+  }
+
+  let fixed = 0
+
+  for (const property of properties || []) {
+    const images = Array.isArray(property.images) ? property.images.filter(Boolean) : []
+    const deduped = Array.from(new Set(images))
+
+    if (JSON.stringify(images) !== JSON.stringify(deduped)) {
+      const { error: updateError } = await (client as any)
+        .from('properties')
+        .update({ images: deduped })
+        .eq('id', property.id)
+
+      if (!updateError) {
+        fixed += 1
+      }
+    }
+  }
+
+  console.log(`Done. Fixed ${fixed} properties.`)
+}
+
+fixBrokenImage()

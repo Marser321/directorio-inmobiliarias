@@ -1,5 +1,5 @@
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/lib/insforge/compat-supabase';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -10,14 +10,14 @@ const __dirname = path.dirname(__filename);
 // Load environment variables
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
 
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    console.error('Missing environment variables. Ensure .env.local has NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
+if (!process.env.NEXT_PUBLIC_INSFORGE_BASE_URL || !process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY) {
+    console.error('Missing environment variables. Ensure .env.local has NEXT_PUBLIC_INSFORGE_BASE_URL and NEXT_PUBLIC_INSFORGE_ANON_KEY');
     process.exit(1);
 }
 
 const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
+    process.env.NEXT_PUBLIC_INSFORGE_BASE_URL,
+    process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY
 );
 
 async function runTest() {

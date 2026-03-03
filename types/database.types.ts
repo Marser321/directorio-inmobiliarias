@@ -248,7 +248,7 @@ export interface Database {
                 }
                 Relationships: []
             }
-            agency_users: {
+            agency_memberships: {
                 Row: {
                     id: number
                     agency_id: number
@@ -272,13 +272,13 @@ export interface Database {
                 }
                 Relationships: [
                     {
-                        foreignKeyName: "agency_users_agency_id_fkey"
+                        foreignKeyName: "agency_memberships_agency_id_fkey"
                         columns: ["agency_id"]
                         referencedRelation: "agencies"
                         referencedColumns: ["id"]
                     },
                     {
-                        foreignKeyName: "agency_users_user_id_fkey"
+                        foreignKeyName: "agency_memberships_user_id_fkey"
                         columns: ["user_id"]
                         referencedRelation: "users"
                         referencedColumns: ["id"]
@@ -445,8 +445,8 @@ export type Agency = Database['public']['Tables']['agencies']['Row']
 export type AgencyInsert = Database['public']['Tables']['agencies']['Insert']
 export type AgencyUpdate = Database['public']['Tables']['agencies']['Update']
 
-export type AgencyUser = Database['public']['Tables']['agency_users']['Row']
-export type AgencyUserInsert = Database['public']['Tables']['agency_users']['Insert']
+export type AgencyUser = Database['public']['Tables']['agency_memberships']['Row']
+export type AgencyUserInsert = Database['public']['Tables']['agency_memberships']['Insert']
 
 export type Property = Database['public']['Tables']['properties']['Row']
 export type PropertyInsert = Database['public']['Tables']['properties']['Insert']

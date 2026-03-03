@@ -1,8 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/lib/insforge/compat-supabase';
 
 // Supabase client for search tracking (using anon key for insert-only)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.NEXT_PUBLIC_INSFORGE_BASE_URL || '';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY || '';
 
 const supabase = supabaseUrl && supabaseAnonKey
     ? createClient(supabaseUrl, supabaseAnonKey)

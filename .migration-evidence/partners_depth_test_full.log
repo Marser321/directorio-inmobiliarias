@@ -1,0 +1,67 @@
+
+> realpde@0.1.0 pretest:full
+> node scripts/check-env.mjs --require-public --warn-server --context test:full
+
+[dotenv@17.2.4] injecting env (24) from .env.local -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+[check-env] Warnings for context "test:full"
+Warnings:
+- Missing optional privileged variables: STRIPE_WEBHOOK_SECRET
+[check-env] OK (test:full)
+
+> realpde@0.1.0 test:full
+> node scripts/run-funnel-suite.mjs
+
+✔ compare endpoint contract by feature flag (1002.332209ms)
+✔ saved search endpoint contract by feature flag (47.136584ms)
+✔ zone insights endpoint contract by feature flag (657.517042ms)
+✔ funnel endpoint accepts valid public events (978.9955ms)
+✔ funnel endpoint rejects metadata with PII (47.227791ms)
+✔ funnel sequence Search -> Ficha -> WhatsApp is accepted (4817.88225ms)
+✔ lead fallback endpoint creates pending lead (1178.864125ms)
+✔ lead fallback validation rejects malformed payload (6.563458ms)
+✔ checklist passes with complete publish requirements (0.499666ms)
+✔ checklist fails when media count is below minimum (0.087209ms)
+✔ checklist fails when description or location is incomplete (0.079208ms)
+✔ resolvePropertyCoordinates uses manual coordinates first (0.913666ms)
+✔ resolvePropertyCoordinates uses geocoded point before centroid (2.089125ms)
+✔ resolvePropertyCoordinates falls back to centroid when geocoding flag is disabled (0.162292ms)
+✔ resolvePropertyCoordinates returns none when no source is available (0.066333ms)
+✔ search API returns contract fields (1010.473083ms)
+✔ combined filters enforce constraints (220.376209ms)
+✔ price sorting modes are respected (327.357334ms)
+✔ cursor pagination returns next page without duplicates (324.960584ms)
+✔ search_as_move filters by real map bounds (4064.805792ms)
+✔ empty results return valid response shape (638.185875ms)
+✔ featured outranks non-featured when other factors are equal (3.007875ms)
+✔ tie score is stable and resolves by id descending (0.23125ms)
+✔ lifestyle match boosts score when filters are present (0.198166ms)
+✔ price band match influences ranking inside a target range (0.197084ms)
+✔ ranking is deterministic for repeated executions (0.61675ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7384.958708
+{
+  "baseUrl": "http://localhost:3000",
+  "requests": 80,
+  "concurrency": 8,
+  "elapsed_ms": 220.89,
+  "rps": 362.16,
+  "latency_ms": {
+    "min": 5.61,
+    "p50": 16.49,
+    "p95": 38.43,
+    "p99": 38.52,
+    "max": 38.52
+  },
+  "failed_requests": 0,
+  "error_rate": 0,
+  "thresholds": {
+    "p95_ms": 350,
+    "max_error_rate": 0.01
+  }
+}

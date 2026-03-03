@@ -1,0 +1,105 @@
+{
+  "backend": "https://dpxpa3f5.us-east.insforge.app",
+  "startedAt": "2026-03-03T16:05:33.607Z",
+  "checkpoints": [
+    {
+      "checkpoint": "CP-S0",
+      "step": "initialize",
+      "timestamp_utc": "2026-03-03T16:05:35.281Z",
+      "result": "ok"
+    },
+    {
+      "checkpoint": "CP-S1",
+      "step": "get-backend-metadata",
+      "timestamp_utc": "2026-03-03T16:05:35.823Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Backend metadata:\n\n{\n  \"auth\": {\n    \"oAuthProviders\": [\n      \"github\",\n      \"google\"\n    ],\n    \"requireEmailVerification\": true,\n    \"passwordMinLength\": 6,\n    \"requireNumber\": false,\n    \"requireLowercase\": false,\n    \"requireUppercase\": false,\n    \"requireSpecialChar\": false,\n    \"verifyEmailMethod\": \"code\",\n    \"resetPasswordMethod\": \"code\"\n  },\n  \"database\": {\n    \"tables\": [\n      {\n        \"tableName\": \"agencies\",\n        \"recordCount\": 4\n      },\n      {\n        \"tableName\": \"agency_memberships\",\n        \"recordCount\": 1\n      },\n      {\n        \"tableName\": \"agency_users\",\n        \"recordCount\": 0\n      },\n      {\n        \"tableName\": \"funnel_events\",\n        \"recordCount\": 0\n      },\n      {\n        \"tableName\": \"leads\",\n        \"recordCount\": 0\n      },\n      {\n        \"tableName\": \"locations\",\n        \"recordCount\": 15\n      },\n      {\n        \"tableName\": \"profiles\",\n        \"recordCount\": 1\n      },\n      {\n        \"tableName\": \"properties\",\n        \"recordCount\": 12\n      },\n      {\n        \"tableName\": \"property_images\",\n        \"recordCount\": 0\n      },\n      {\n        \"tableName\": \"property_leads\",\n        \"recordCount\": 9\n      },\n      {\n        \"tableName\": \"property_media\",\n        \"recordCount\": 0\n      },\n      {\n        \"tableName\": \"search_queries\",\n        \"recordCount\": 0\n      },\n      {\n        \"tableName\": \"service_requests\",\n        \"recordCount\": 0\n      },\n      {\n        \"tableName\": \"service_tiers\",\n        \"recordCount\": 0\n      },\n      {\n        \"tableName\": \"stripe_webhook_events\",\n        \"recordCount\": 0\n      },\n      {\n        \"tableName\": \"user_funnel_events\",\n        \"recordCount\": 65\n      },\n      {\n        \"tableName\": \"vibe_scores\",\n        \"recordCount\": 0\n      }\n    ],\n    \"totalSizeInGB\": 0.010426326654851437,\n    \"hint\": \"To retrieve detailed schema information for a specific table, call the get-table-schema tool with the table name.\"\n  },\n  \"storage\": {\n    \"buckets\": [\n      {\n        \"name\": \"agency-logos\",\n        \"public\": true,\n        \"createdAt\": \"2026-03-03T00:16:43.755Z\",\n        \"objectCount\": 0\n      },\n      {\n        \"name\": \"property-images\",\n        \"public\": true,\n        \"createdAt\": \"2026-03-02T22:12:22.762Z\",\n        \"objectCount\": 0\n      }\n    ],\n    \"totalSizeInGB\": 0\n  },\n  \"functions\": [],\n  \"aiIntegration\": {\n    \"models\": [\n      {\n        \"inputModality\": [\n          \"text\",\n          \"image\"\n        ],\n        \"outputModality\": [\n          \"text\"\n        ],\n        \"modelId\": \"deepseek/deepseek-v3.2\"\n      },\n      {\n        \"inputModality\": [\n          \"text\",\n          \"image\"\n        ],\n        \"outputModality\": [\n          \"text\"\n        ],\n        \"modelId\": \"minimax/minimax-m2.1\"\n      },\n      {\n        \"inputModality\": [\n          \"text\",\n          \"image\"\n        ],\n        \"outputModality\": [\n          \"text\"\n        ],\n        \"modelId\": \"x-ai/grok-4.1-fast\"\n      },\n      {\n        \"inputModality\": [\n          \"text\",\n          \"image\"\n        ],\n        \"outputModality\": [\n          \"text\"\n        ],\n        \"modelId\": \"anthropic/claude-sonnet-4.5\"\n      },\n      {\n        \"inputModality\": [\n          \"text\",\n          \"image\"\n        ],\n        \"outputModality\": [\n          \"text\"\n        ],\n        \"modelId\": \"openai/gpt-4o-mini\"\n      },\n      {\n        \"inputModality\": [\n          \"text\",\n          \"image\"\n        ],\n        \"outputModality\": [\n          \"text\",\n          \"image\"\n        ],\n        \"modelId\": \"google/gemini-3-pro-image-preview\"\n      }\n    ]\n  },\n  \"version\": \"1.0.0\"\n}"
+          }
+        ]
+      }
+    },
+    {
+      "checkpoint": "CP-S1",
+      "step": "run-raw-sql-select-1",
+      "timestamp_utc": "2026-03-03T16:05:36.135Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "SQL query executed completed successfully:\n{\n  \"rows\": [\n    {\n      \"ok\": 1\n    }\n  ],\n  \"rowCount\": 1,\n  \"fields\": [\n    {\n      \"name\": \"ok\",\n      \"dataTypeID\": 23\n    }\n  ]\n}"
+          }
+        ]
+      }
+    },
+    {
+      "checkpoint": "CP-S1",
+      "step": "baseline-pre-migration",
+      "timestamp_utc": "2026-03-03T16:05:36.449Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "SQL query executed completed successfully:\n{\n  \"rows\": [\n    {\n      \"user_saved_properties\": false,\n      \"saved_searches\": false,\n      \"search_alert_deliveries\": false\n    }\n  ],\n  \"rowCount\": 1,\n  \"fields\": [\n    {\n      \"name\": \"user_saved_properties\",\n      \"dataTypeID\": 16\n    },\n    {\n      \"name\": \"saved_searches\",\n      \"dataTypeID\": 16\n    },\n    {\n      \"name\": \"search_alert_deliveries\",\n      \"dataTypeID\": 16\n    }\n  ]\n}"
+          }
+        ]
+      }
+    },
+    {
+      "checkpoint": "CP-S2",
+      "step": "apply-20260303-buyer-depth-features",
+      "timestamp_utc": "2026-03-03T16:05:36.826Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "SQL query executed completed successfully:\n{\n  \"rows\": []\n}"
+          }
+        ]
+      }
+    },
+    {
+      "checkpoint": "CP-S2",
+      "step": "post-objects-check",
+      "timestamp_utc": "2026-03-03T16:05:37.140Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "SQL query executed completed successfully:\n{\n  \"rows\": [\n    {\n      \"user_saved_properties\": true,\n      \"saved_searches\": true,\n      \"search_alert_deliveries\": true\n    }\n  ],\n  \"rowCount\": 1,\n  \"fields\": [\n    {\n      \"name\": \"user_saved_properties\",\n      \"dataTypeID\": 16\n    },\n    {\n      \"name\": \"saved_searches\",\n      \"dataTypeID\": 16\n    },\n    {\n      \"name\": \"search_alert_deliveries\",\n      \"dataTypeID\": 16\n    }\n  ]\n}"
+          }
+        ]
+      }
+    },
+    {
+      "checkpoint": "CP-S2",
+      "step": "post-rls-policies-check",
+      "timestamp_utc": "2026-03-03T16:05:37.486Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "SQL query executed completed successfully:\n{\n  \"rows\": [\n    {\n      \"tablename\": \"saved_searches\",\n      \"policyname\": \"project_admin_policy\"\n    },\n    {\n      \"tablename\": \"saved_searches\",\n      \"policyname\": \"saved_searches_delete_policy\"\n    },\n    {\n      \"tablename\": \"saved_searches\",\n      \"policyname\": \"saved_searches_insert_policy\"\n    },\n    {\n      \"tablename\": \"saved_searches\",\n      \"policyname\": \"saved_searches_select_policy\"\n    },\n    {\n      \"tablename\": \"saved_searches\",\n      \"policyname\": \"saved_searches_update_policy\"\n    },\n    {\n      \"tablename\": \"search_alert_deliveries\",\n      \"policyname\": \"project_admin_policy\"\n    },\n    {\n      \"tablename\": \"search_alert_deliveries\",\n      \"policyname\": \"search_alert_deliveries_select_policy\"\n    },\n    {\n      \"tablename\": \"user_saved_properties\",\n      \"policyname\": \"project_admin_policy\"\n    },\n    {\n      \"tablename\": \"user_saved_properties\",\n      \"policyname\": \"user_saved_properties_delete_policy\"\n    },\n    {\n      \"tablename\": \"user_saved_properties\",\n      \"policyname\": \"user_saved_properties_insert_policy\"\n    },\n    {\n      \"tablename\": \"user_saved_properties\",\n      \"policyname\": \"user_saved_properties_select_policy\"\n    }\n  ],\n  \"rowCount\": 11,\n  \"fields\": [\n    {\n      \"name\": \"tablename\",\n      \"dataTypeID\": 19\n    },\n    {\n      \"name\": \"policyname\",\n      \"dataTypeID\": 19\n    }\n  ]\n}"
+          }
+        ]
+      }
+    },
+    {
+      "checkpoint": "CP-S4",
+      "step": "post-counts-check",
+      "timestamp_utc": "2026-03-03T16:05:37.817Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "SQL query executed completed successfully:\n{\n  \"rows\": [\n    {\n      \"favorites_rows\": \"0\",\n      \"saved_searches_rows\": \"0\",\n      \"deliveries_rows\": \"0\",\n      \"whatsapp_sent_rows\": \"0\"\n    }\n  ],\n  \"rowCount\": 1,\n  \"fields\": [\n    {\n      \"name\": \"favorites_rows\",\n      \"dataTypeID\": 20\n    },\n    {\n      \"name\": \"saved_searches_rows\",\n      \"dataTypeID\": 20\n    },\n    {\n      \"name\": \"deliveries_rows\",\n      \"dataTypeID\": 20\n    },\n    {\n      \"name\": \"whatsapp_sent_rows\",\n      \"dataTypeID\": 20\n    }\n  ]\n}"
+          }
+        ]
+      }
+    }
+  ],
+  "stderr": "Backend version: 1.5.8\nInsforge MCP server started\nAPI Key: Configured\nAPI Base URL: https://dpxpa3f5.us-east.insforge.app\nBackend Version: 1.5.8\nTools registered: 17\n",
+  "finishedAt": "2026-03-03T16:05:37.817Z"
+}

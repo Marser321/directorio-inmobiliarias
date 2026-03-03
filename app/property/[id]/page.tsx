@@ -1,32 +1,79 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/insforge/compat-supabase'
 import PropertyDetailClient from './PropertyDetailClient'
 
 // Server-side Supabase client
 const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_INSFORGE_BASE_URL!,
+    process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY!
 )
 
 interface PropertyPageProps {
     params: Promise<{ id: string }>
 }
 
+function asFiniteNumber(value: unknown) {
+    if (typeof value !== 'number') return null
+    return Number.isFinite(value) ? value : null
+}
+
+function extractCoordinates(property: Record<string, unknown>) {
+    const directLat = asFiniteNumber(property.location_lat)
+    const directLng = asFiniteNumber(property.location_lng)
+    if (directLat !== null && directLng !== null) {
+        return { lat: directLat, lng: directLng }
+    }
+
+    const geojson = property.location_point_geojson
+    if (
+        geojson &&
+        typeof geojson === 'object' &&
+        'coordinates' in geojson &&
+        Array.isArray((geojson as { coordinates?: unknown }).coordinates)
+    ) {
+        const coords = (geojson as { coordinates: unknown[] }).coordinates
+        if (coords.length >= 2) {
+            const lng = asFiniteNumber(coords[0])
+            const lat = asFiniteNumber(coords[1])
+            if (lat !== null && lng !== null) {
+                return { lat, lng }
+            }
+        }
+    }
+
+    return { lat: null, lng: null }
+}
+
 // Fetch property data
 async function getProperty(id: string) {
-    const { data, error } = await supabase
-        .from('properties')
-        .select(`
+    const selectColumns = `
             *,
             location:locations(name, slug),
             agency:agencies(name, slug, whatsapp, contact_phone)
-        `)
-        .eq('id', id)
+        `
+
+    const numericId = Number(id)
+    if (Number.isFinite(numericId) && numericId > 0) {
+        const byIdResult = await supabase
+            .from('properties')
+            .select(selectColumns)
+            .eq('id', numericId)
+            .single()
+
+        if (!byIdResult.error && byIdResult.data) {
+            return byIdResult.data
+        }
+    }
+
+    const bySlugResult = await supabase
+        .from('properties')
+        .select(selectColumns)
+        .eq('slug', id)
         .single()
 
-    if (error || !data) return null
-    return data
+    if (bySlugResult.error || !bySlugResult.data) return null
+    return bySlugResult.data
 }
 
 // SEO: Generate dynamic metadata
@@ -89,7 +136,7 @@ export async function generateMetadata({ params }: PropertyPageProps): Promise<M
             title,
             description,
             type: 'website',
-            url: `${baseUrl}/property/${id}`,
+            url: `${baseUrl}/property/${property.slug || property.id}`,
             images: [
                 {
                     url: ogImageUrl,
@@ -118,10 +165,23 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
     }
 
     // Transform data for client component
+    const { lat, lng } = extractCoordinates(property as Record<string, unknown>)
     const clientData = {
         id: property.id,
+        agencyId: typeof property.agency_id === 'number' ? property.agency_id : null,
         title: property.title,
         location: property.location?.name || 'Uruguay',
+        address: typeof property.address === 'string' ? property.address : null,
+        city: typeof property.city === 'string' ? property.city : null,
+        coordinateSource:
+          typeof (property as Record<string, unknown>).coordinate_source === 'string'
+            ? ((property as Record<string, unknown>).coordinate_source as
+                | 'manual'
+                | 'geocoded'
+                | 'centroid'
+                | 'none'
+                | 'unknown')
+            : null,
         badge: property.is_featured ? 'Destacada' : (property.status === 'for_sale' ? 'En Venta' : 'En Alquiler'),
         price: property.price,
         currency: property.currency || 'USD',
@@ -142,6 +202,8 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
             whatsapp: property.agency?.whatsapp || '',
             avatar: '/images/placeholders/agent-profile.jpg',
         },
+        lat,
+        lng,
     }
 
     return <PropertyDetailClient property={clientData} />

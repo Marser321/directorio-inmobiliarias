@@ -70,7 +70,7 @@ export default function DemoAntigravityPage() {
                         <span className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded-full border border-green-500/30">Live</span>
                     </div>
                     <p className="text-neutral-400 mt-2">
-                        Mapa interactivo con filtros de "Vibe" dinámicos. Prueba filtrar por "Vida Nocturna" o "Silencio" para ver cómo cambian las zonas activas.
+                        Mapa interactivo con filtros de &quot;Vibe&quot; dinámicos. Prueba filtrar por &quot;Vida Nocturna&quot; o &quot;Silencio&quot; para ver cómo cambian las zonas activas.
                     </p>
 
                     <div className="glass-card p-2 rounded-3xl border border-white/10 overflow-hidden shadow-2xl shadow-black/50">

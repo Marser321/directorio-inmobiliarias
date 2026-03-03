@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
+import Image from 'next/image';
 import { MapPin } from 'lucide-react';
 
 interface ParallaxGalleryImage {
@@ -53,9 +54,12 @@ export function ParallaxGallery({ images, title, location, badge, id }: Parallax
                     className="absolute inset-0 w-full h-[120%] -top-[10%]"
                     layoutId={id ? `property-image-${id}` : undefined}
                 >
-                    <img
+                    <Image
                         src={mainImage.src}
                         alt={mainImage.alt}
+                        fill
+                        unoptimized
+                        sizes="100vw"
                         className="w-full h-full object-cover"
                     />
                 </motion.div>
@@ -125,9 +129,12 @@ export function ParallaxGallery({ images, title, location, badge, id }: Parallax
                                     whileHover={{ scale: 1.02 }}
                                     className="relative aspect-[4/3] rounded-xl overflow-hidden cursor-pointer group"
                                 >
-                                    <img
+                                    <Image
                                         src={img.src}
                                         alt={img.alt}
+                                        fill
+                                        unoptimized
+                                        sizes="(max-width: 768px) 50vw, 25vw"
                                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                     />
                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />

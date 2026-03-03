@@ -16,25 +16,12 @@ export type SearchFilters = {
     sortBy: "relevance" | "price_asc" | "price_desc" | "newest"
 }
 
-const DEFAULT_FILTERS: SearchFilters = {
-    query: "",
-    priceMin: null,
-    priceMax: null,
-    bedrooms: null,
-    bathrooms: null,
-    propertyType: null,
-    status: null,
-    features: [],
-    lifestyles: [],
-    sortBy: "relevance",
-}
-
 // Debounce helper
 function useDebounce<T extends (...args: Parameters<T>) => void>(
     fn: T,
     delay: number
 ): T {
-    const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     useEffect(() => {
         return () => {
@@ -42,13 +29,12 @@ function useDebounce<T extends (...args: Parameters<T>) => void>(
         }
     }, [])
 
-    return useCallback(
-        ((...args: Parameters<T>) => {
-            if (timeoutRef.current) clearTimeout(timeoutRef.current)
-            timeoutRef.current = setTimeout(() => fn(...args), delay)
-        }) as T,
-        [fn, delay]
-    )
+    const debounced = useCallback((...args: Parameters<T>) => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current)
+        timeoutRef.current = setTimeout(() => fn(...args), delay)
+    }, [fn, delay])
+
+    return debounced as T
 }
 
 export function useSearchFilters() {

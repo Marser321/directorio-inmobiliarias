@@ -1,6 +1,8 @@
 import { ImageResponse } from '@vercel/og'
 import { NextRequest } from 'next/server'
 
+/* eslint-disable @next/next/no-img-element */
+
 export const runtime = 'edge'
 
 export async function GET(request: NextRequest) {

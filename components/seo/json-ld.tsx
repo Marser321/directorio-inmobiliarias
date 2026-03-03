@@ -2,7 +2,7 @@
 import React from 'react'
 
 type JsonLdProps = {
-    data: Record<string, any>
+    data: Record<string, unknown>
 }
 
 export function JsonLd({ data }: JsonLdProps) {
@@ -16,13 +16,16 @@ export function JsonLd({ data }: JsonLdProps) {
 
 // Helper generators for specific schemas
 
-export function generatePropertySchema(property: any) {
+export function generatePropertySchema(property: Record<string, unknown>) {
+    const images = property.images as string[] | undefined
+    const locationImage = property.main_image as string | undefined
+
     return {
         "@context": "https://schema.org",
         "@type": "RealEstateListing",
         "name": property.title,
         "description": property.description,
-        "image": property.images?.[0] || property.main_image,
+        "image": images?.[0] || locationImage,
         "datePosted": property.created_at,
         "price": property.price,
         "priceCurrency": property.currency,

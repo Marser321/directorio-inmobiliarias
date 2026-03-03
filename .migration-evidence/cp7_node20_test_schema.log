@@ -1,0 +1,9 @@
+[dotenv@17.2.4] injecting env (12) from .env.local -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+OK: properties
+OK: property_media
+OK: search_queries
+OK: service_tiers
+OK: vibe_scores
+OK: stripe_webhook_events
+
+Release schema contract check passed.

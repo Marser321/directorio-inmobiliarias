@@ -2,14 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import {
-    Users,
     Search,
     Shield,
     MoreVertical,
-    UserCheck,
-    UserX,
-    Building2,
-    Mail
 } from 'lucide-react'
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { ImpersonateButton } from './impersonate-button'
@@ -23,7 +18,7 @@ interface Profile {
     created_at: string
     agency: {
         name: string
-    }[] | null // Joined via agency_users
+    }[] | null // Joined via agency_memberships
 }
 
 export default function AdminUsers() {
@@ -31,24 +26,36 @@ export default function AdminUsers() {
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState('')
 
-    const fetchUsers = useCallback(async () => {
+    const loadUsers = useCallback(async (): Promise<Profile[]> => {
         const supabase = getSupabaseBrowserClient()
-
-        // Fetch profiles
         const { data, error } = await supabase
             .from('profiles')
             .select('*')
             .order('created_at', { ascending: false })
 
-        if (!error && data) {
-            setUsers(data as any[])
-        }
-        setLoading(false)
+        if (error || !data) return []
+        return data as Profile[]
     }, [])
 
+    const fetchUsers = useCallback(async () => {
+        setLoading(true)
+        const nextUsers = await loadUsers()
+        setUsers(nextUsers)
+        setLoading(false)
+    }, [loadUsers])
+
     useEffect(() => {
-        fetchUsers()
-    }, [fetchUsers])
+        let active = true
+        void loadUsers().then((nextUsers) => {
+            if (!active) return
+            setUsers(nextUsers)
+            setLoading(false)
+        })
+
+        return () => {
+            active = false
+        }
+    }, [loadUsers])
 
     const filteredUsers = users.filter(u =>
         (u.full_name || '').toLowerCase().includes(search.toLowerCase()) ||
@@ -113,9 +120,11 @@ export default function AdminUsers() {
                                         </div>
                                     </td>
                                     <td className="p-4">
-                                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${user.role === 'admin'
+                                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${user.role === 'platform_admin'
                                             ? 'bg-red-500/10 text-red-500 border-red-500/20'
-                                            : user.role === 'agent'
+                                            : user.role === 'agency_admin'
+                                                ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                                                : user.role === 'agent'
                                                 ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
                                                 : 'bg-green-500/10 text-green-500 border-green-500/20'
                                             }`}>

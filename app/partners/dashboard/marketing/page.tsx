@@ -1,126 +1,172 @@
 'use client'
 
+import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
+import { useSearchParams } from 'next/navigation'
+import { Check, Sparkles, Zap } from 'lucide-react'
 import { ServiceRequestForm } from '@/components/marketing/ServiceRequestForm'
 import { RequestStatusList } from '@/components/marketing/RequestStatusList'
-import { Check, Zap } from 'lucide-react'
+import type { LuxeStudioContext, LuxeStudioRequestType } from '@/types/domain'
 
-// Mock Subscription Data
-const currentPlan = {
-    name: 'Pack Pro',
-    credits_total: 10,
-    credits_used: 4,
-    renewal_date: '01/03/2026'
+const SERVICE_TYPES: LuxeStudioRequestType[] = ['property_photos', 'video_tour', 'copywriting', 'social_media']
+
+function isServiceType(value: string | null): value is LuxeStudioRequestType {
+  return Boolean(value && SERVICE_TYPES.includes(value as LuxeStudioRequestType))
 }
 
 export default function MarketingPage() {
-    return (
-        <div className="min-h-[calc(100vh-4rem)] p-6 md:p-8 space-y-8">
-            {/* Header */}
-            <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-            >
-                <h1 className="text-2xl md:text-3xl font-serif font-bold text-foreground">
-                    Agencia de Marketing <span className="text-gold">AI</span>
-                </h1>
-                <p className="text-muted-foreground mt-1">
-                    Solicita contenido profesional generado por IA para tus propiedades.
+  const searchParams = useSearchParams()
+  const [currentPlan, setCurrentPlan] = useState({
+    name: 'Pack Básico',
+    credits_total: 10,
+    credits_used: 0,
+    renewal_date: '-',
+  })
+
+  const context = useMemo<LuxeStudioContext | null>(() => {
+    const serviceParam = searchParams.get('service')
+    if (!isServiceType(serviceParam)) return null
+
+    const propertyIdRaw = Number(searchParams.get('propertyId') || '')
+    const propertyId = Number.isFinite(propertyIdRaw) && propertyIdRaw > 0 ? propertyIdRaw : null
+
+    return {
+      service: serviceParam,
+      propertyId,
+      source: searchParams.get('source') || 'marketing_dashboard',
+    }
+  }, [searchParams])
+
+  useEffect(() => {
+    fetch('/api/marketing/tiers', { cache: 'no-store' })
+      .then((response) => response.json())
+      .then((payload) => {
+        const subscription = payload.currentSubscription
+        const tier = subscription?.tier
+        if (!tier) return
+
+        setCurrentPlan({
+          name: tier.name || 'Plan Activo',
+          credits_total: 10,
+          credits_used: 0,
+          renewal_date: subscription.current_period_end
+            ? new Date(subscription.current_period_end).toLocaleDateString('es-UY')
+            : '-',
+        })
+      })
+      .catch(() => undefined)
+  }, [])
+
+  const creditsLeft = Math.max(currentPlan.credits_total - currentPlan.credits_used, 0)
+  const usagePercent = currentPlan.credits_total > 0 ? (currentPlan.credits_used / currentPlan.credits_total) * 100 : 0
+
+  return (
+    <div className="min-h-[calc(100vh-8rem)] bg-editorial-layer px-4 py-6 md:px-6 md:py-8">
+      <div className="mx-auto w-full max-w-7xl space-y-6">
+        <motion.section
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+          className="rounded-2xl border border-border/70 bg-card/90 p-5"
+        >
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.18em] text-ink-soft">Luxe Studio</p>
+              <h1 className="mt-1 text-2xl font-semibold text-ink-strong md:text-3xl">Centro de servicios multimedia</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Solicita producción de contenido para propiedades con contexto desde dashboard, wizard y media center.
+              </p>
+              {context ? (
+                <p className="mt-2 text-xs text-accent-gold-strong">
+                  Prefill activo: {context.service} {context.propertyId ? `· propiedad #${context.propertyId}` : ''} · {context.source}
                 </p>
-            </motion.div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Left Column: Request Form & Plan Info */}
-                <div className="lg:col-span-2 space-y-8">
-                    {/* Plan Info Banner */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.1 }}
-                        className="rounded-xl bg-gradient-to-r from-gray-900 to-gray-800 border border-gold/30 p-6 text-white relative overflow-hidden"
-                    >
-                        <div className="absolute top-0 right-0 p-3 opacity-10">
-                            <Zap className="w-32 h-32" />
-                        </div>
-
-                        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                            <div>
-                                <div className="flex items-center gap-2 mb-2">
-                                    <span className="bg-gold/20 text-gold text-xs font-bold px-2 py-1 rounded-full border border-gold/30">
-                                        PLAN ACTIVO
-                                    </span>
-                                    <h3 className="text-xl font-bold">{currentPlan.name}</h3>
-                                </div>
-                                <div className="text-sm text-gray-400">
-                                    Tienes <span className="text-white font-bold">{currentPlan.credits_total - currentPlan.credits_used} créditos</span> disponibles este mes.
-                                    Renueva el {currentPlan.renewal_date}.
-                                </div>
-                            </div>
-
-                            <button className="text-sm border border-white/20 hover:bg-white/10 px-4 py-2 rounded-lg transition-colors">
-                                Gestionar Suscripción
-                            </button>
-                        </div>
-
-                        {/* Progress Bar */}
-                        <div className="mt-6">
-                            <div className="flex justify-between text-xs text-gray-400 mb-1">
-                                <span>Uso de Créditos</span>
-                                <span>{currentPlan.credits_used} / {currentPlan.credits_total}</span>
-                            </div>
-                            <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-                                <div
-                                    className="h-full bg-gold transition-all duration-1000"
-                                    style={{ width: `${(currentPlan.credits_used / currentPlan.credits_total) * 100}%` }}
-                                />
-                            </div>
-                        </div>
-                    </motion.div>
-
-                    {/* Request Form */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                    >
-                        <ServiceRequestForm />
-                    </motion.div>
-                </div>
-
-                {/* Right Column: Status List & Info */}
-                <div className="space-y-8">
-                    <motion.div
-                        initial={{ opacity: 0, x: 10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.3 }}
-                    >
-                        <RequestStatusList />
-                    </motion.div>
-
-                    <motion.div
-                        initial={{ opacity: 0, x: 10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.4 }}
-                        className="rounded-xl border border-border/50 bg-background/50 p-5"
-                    >
-                        <h4 className="font-semibold mb-4">¿Qué incluye tu plan?</h4>
-                        <ul className="space-y-3 text-sm text-muted-foreground">
-                            <li className="flex items-start gap-2">
-                                <Check className="w-4 h-4 text-green-500 mt-0.5" />
-                                <span>Mejora de fotos con IA (Iluminación, Cielos)</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                                <Check className="w-4 h-4 text-green-500 mt-0.5" />
-                                <span>Generación de descripciones persuasivas</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                                <Check className="w-4 h-4 text-green-500 mt-0.5" />
-                                <span>Edición de Video Reels para Instagram</span>
-                            </li>
-                        </ul>
-                    </motion.div>
-                </div>
+              ) : null}
             </div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-accent-gold-soft/35 bg-accent-gold-soft/10 px-3 py-1.5 text-xs text-ink-strong">
+              <Sparkles className="h-3.5 w-3.5" />
+              Operación contextual
+            </span>
+          </div>
+        </motion.section>
+
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="space-y-6 lg:col-span-2">
+            <motion.section
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: 0.05 }}
+              className="rounded-2xl border border-border/70 bg-card/90 p-5"
+            >
+              <div className="relative overflow-hidden rounded-xl border border-accent-gold-soft/25 bg-surface-1/80 p-4">
+                <div className="absolute -right-6 -top-6 opacity-10">
+                  <Zap className="h-28 w-28" />
+                </div>
+                <div className="relative z-10">
+                  <p className="text-xs uppercase tracking-[0.16em] text-ink-soft">Plan actual</p>
+                  <h2 className="mt-1 text-xl font-semibold text-ink-strong">{currentPlan.name}</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Te quedan <span className="font-medium text-ink-strong">{creditsLeft} créditos</span> en el período actual.
+                    Renovación: {currentPlan.renewal_date}.
+                  </p>
+
+                  <div className="mt-4">
+                    <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Uso de créditos</span>
+                      <span>
+                        {currentPlan.credits_used} / {currentPlan.credits_total}
+                      </span>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-border/80">
+                      <div className="h-full bg-accent-gold-soft transition-all duration-500" style={{ width: `${usagePercent}%` }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.section>
+
+            <motion.section
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: 0.1 }}
+            >
+              <ServiceRequestForm context={context} />
+            </motion.section>
+          </div>
+
+          <div className="space-y-6">
+            <motion.section
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.35, delay: 0.15 }}
+            >
+              <RequestStatusList />
+            </motion.section>
+
+            <motion.section
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.35, delay: 0.2 }}
+              className="rounded-2xl border border-border/70 bg-card/90 p-5"
+            >
+              <h3 className="text-base font-semibold text-ink-strong">Qué cubre Luxe Studio</h3>
+              <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <Check className="mt-0.5 h-4 w-4 text-emerald-600 dark:text-emerald-300" />
+                  Set de fotos para listing y portada.
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="mt-0.5 h-4 w-4 text-emerald-600 dark:text-emerald-300" />
+                  Video corto orientado a conversión.
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="mt-0.5 h-4 w-4 text-emerald-600 dark:text-emerald-300" />
+                  Copy de ficha y kit base para redes.
+                </li>
+              </ul>
+            </motion.section>
+          </div>
         </div>
-    )
+      </div>
+    </div>
+  )
 }

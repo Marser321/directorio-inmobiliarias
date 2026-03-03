@@ -43,6 +43,16 @@ interface AgencyFormData {
     tier_subscription?: 'basic' | 'pro' | 'enterprise'
 }
 
+type AgencyUpdatePayload = Partial<AgencyFormData> & {
+    social_links?: {
+        instagram?: string
+        facebook?: string
+        linkedin?: string
+        youtube?: string
+        tiktok?: string
+    }
+}
+
 export async function createAgencyAction(data: AgencyFormData) {
     const supabase = await createClient()
 
@@ -114,9 +124,10 @@ export async function createAgencyAction(data: AgencyFormData) {
             agencyId: agency?.id
         }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Create Agency Error:', error)
-        return { success: false, message: error.message || 'Error al crear la agencia' }
+        const message = error instanceof Error ? error.message : 'Error al crear la agencia'
+        return { success: false, message }
     }
 }
 
@@ -124,7 +135,7 @@ export async function updateAgencyAction(id: number | string, data: Partial<Agen
     const supabase = await createClient()
 
     // Construct social_links JSON if any social field is present
-    let updateData: any = { ...data };
+    const updateData: AgencyUpdatePayload = { ...data };
 
     // Remove individual social fields from updateData
     delete updateData.social_instagram;
@@ -165,8 +176,9 @@ export async function updateAgencyAction(id: number | string, data: Partial<Agen
         revalidatePath(`/agencies/${data.slug}`) // Revalidate public page
         return { success: true, message: 'Agencia actualizada correctamente' }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Update Agency Error:', error)
-        return { success: false, message: error.message || 'Error al actualizar la agencia' }
+        const message = error instanceof Error ? error.message : 'Error al actualizar la agencia'
+        return { success: false, message }
     }
 }

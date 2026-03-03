@@ -1,11 +1,4 @@
-
-import { notFound } from "next/navigation"
-import SearchPage from "@/app/search/page"
-
-// This page catches all SEO-friendly URLs like:
-// /punta-del-este
-// /punta-del-este/la-barra
-// /punta-del-este/la-barra/waterfront
+import { notFound, redirect } from "next/navigation"
 
 interface PageProps {
     params: Promise<{
@@ -14,34 +7,123 @@ interface PageProps {
     }>
 }
 
+const RESERVED_PREFIXES = new Set([
+    'admin',
+    'api',
+    'partners',
+    'property',
+    'agencies',
+    '_next',
+    'search',
+    'explore',
+    'privacidad',
+    'terminos',
+    'sitemap.xml',
+    'robots.txt',
+    'favicon.ico',
+])
+
+const PROPERTY_TYPE_MAP: Record<string, string> = {
+    casas: 'casa',
+    apartamentos: 'apartamento',
+    chacras: 'chacra',
+    terrenos: 'terreno',
+    ph: 'apartamento',
+}
+
+const LIFESTYLE_MAP: Record<string, string> = {
+    'vida-nocturna': 'nightlife',
+    'silencio-paz': 'silence',
+    'golf-bosque': 'golf',
+    'surf-olas': 'surf',
+    familiar: 'family',
+}
+
+function toHumanText(value: string) {
+    return value
+        .split('-')
+        .map((entry) => entry.charAt(0).toUpperCase() + entry.slice(1))
+        .join(' ')
+}
+
+function isReservedPath(params: { city: string; slug?: string[] }) {
+    if (RESERVED_PREFIXES.has(params.city.toLowerCase())) {
+        return true
+    }
+
+    const firstSlugSegment = params.slug?.[0]?.toLowerCase()
+    if (!firstSlugSegment) {
+        return false
+    }
+
+    return RESERVED_PREFIXES.has(firstSlugSegment)
+}
+
+function buildSearchParams(city: string, slug?: string[]) {
+    const params = new URLSearchParams()
+    const normalizedCity = city.toLowerCase()
+    const firstSegment = slug?.[0]?.toLowerCase()
+    const secondSegment = slug?.[1]?.toLowerCase()
+
+    const zoneSegment = secondSegment ? firstSegment : undefined
+    const categorySegment = secondSegment || firstSegment
+
+    if (zoneSegment) {
+        params.set('q', toHumanText(zoneSegment))
+    } else if (normalizedCity !== 'maldonado') {
+        params.set('q', toHumanText(city))
+    }
+
+    if (categorySegment && PROPERTY_TYPE_MAP[categorySegment]) {
+        params.set('type', PROPERTY_TYPE_MAP[categorySegment])
+    }
+
+    if (categorySegment && LIFESTYLE_MAP[categorySegment]) {
+        params.set('lifestyles', LIFESTYLE_MAP[categorySegment])
+    }
+
+    return params
+}
+
 export async function generateMetadata({ params }: PageProps) {
     const { city, slug } = await params
 
-    // Logic to parse params and generate smart SEO titles
-    // Mock logic for now implies we would look up these slugs in DB
-    const zone = slug?.[0]
-    const lifestyle = slug?.[1]
+    if (isReservedPath({ city, slug })) {
+        return {
+            title: 'Página no encontrada',
+            robots: {
+                index: false,
+                follow: false,
+            },
+        }
+    }
 
-    const titleLocation = zone
-        ? `${zone.replace('-', ' ')}, ${city.replace('-', ' ')}`
-        : city.replace('-', ' ')
+    const firstSegment = slug?.[0]
+    const secondSegment = slug?.[1]
+    const zone = secondSegment ? firstSegment : undefined
+    const filter = secondSegment || firstSegment
 
-    const titleStart = lifestyle
-        ? `${lifestyle.replace('-', ' ')} Properties`
-        : `Luxury Real Estate`
+    const titleParts = [
+        filter ? toHumanText(filter) : 'Propiedades de lujo',
+        zone ? `en ${toHumanText(zone)}` : (city.toLowerCase() !== 'maldonado' ? `en ${toHumanText(city)}` : 'en Maldonado')
+    ]
+
+    const title = `${titleParts.join(' ')} | Luxe Estate`
 
     return {
-        title: `${titleStart} in ${titleLocation} | Luxe Estate`,
-        description: `Descubra propiedades exclusivas en ${titleLocation}. Navegue por nuestra selección curada de casas de lujo.`,
+        title,
+        description: `Explora resultados filtrados de ${titleParts.join(' ')} con mapa interactivo y contacto directo por WhatsApp.`,
     }
 }
 
 export default async function DynamicSEOPage({ params }: PageProps) {
     const { city, slug } = await params
 
-    // In a real implementation, we would pass these params 
-    // to the SearchPage (or a SearchContainer) to pre-filter the results.
-    // For now, we render the Search Page UI.
+    if (isReservedPath({ city, slug })) {
+        notFound()
+    }
 
-    return <SearchPage />
+    const searchParams = buildSearchParams(city, slug)
+    const target = `/search${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
+    redirect(target)
 }

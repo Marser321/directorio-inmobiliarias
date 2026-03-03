@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -24,7 +25,36 @@ import {
 
 const CITIES = ['Punta del Este', 'Maldonado', 'José Ignacio', 'La Barra', 'Manantiales', 'Punta Ballena']
 
-export function AgencyEditForm({ agencyData }: { agencyData: any }) {
+interface AgencyData {
+    id: number | string
+    name?: string
+    slug?: string
+    tagline?: string
+    description?: string
+    contact_email?: string
+    contact_phone?: string
+    whatsapp?: string
+    website?: string
+    address?: string
+    city?: string
+    social_links?: {
+        instagram?: string
+        facebook?: string
+        linkedin?: string
+        youtube?: string
+        tiktok?: string
+    } | null
+    year_established?: number | string
+    languages?: string[] | string
+    specialties?: string[] | string
+    certifications?: string[] | string
+    logo_url?: string
+    cover_image_url?: string
+    meta_description?: string
+    tier_subscription?: 'basic' | 'pro' | 'enterprise'
+}
+
+export function AgencyEditForm({ agencyData }: { agencyData: AgencyData }) {
     const router = useRouter()
     const supabase = createClient()
 
@@ -101,8 +131,9 @@ export function AgencyEditForm({ agencyData }: { agencyData: any }) {
 
             setFormData(prev => ({ ...prev, [field]: publicUrl }))
             toast.success('Imagen subida correctamente')
-        } catch (error: any) {
-            toast.error('Error subiendo imagen: ' + error.message)
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Error desconocido'
+            toast.error('Error subiendo imagen: ' + message)
         } finally {
             setUploading(false)
         }
@@ -429,7 +460,14 @@ export function AgencyEditForm({ agencyData }: { agencyData: any }) {
                         <div className="flex items-center gap-4">
                             {formData.logo_url ? (
                                 <div className="relative w-32 h-32 rounded-xl overflow-hidden bg-slate-100 border">
-                                    <img src={formData.logo_url} alt="Logo" className="w-full h-full object-contain p-2" />
+                                    <Image
+                                        src={formData.logo_url}
+                                        alt="Logo"
+                                        fill
+                                        unoptimized
+                                        sizes="128px"
+                                        className="w-full h-full object-contain p-2"
+                                    />
                                     <button
                                         type="button"
                                         onClick={() => setFormData(prev => ({ ...prev, logo_url: '' }))}
@@ -460,7 +498,14 @@ export function AgencyEditForm({ agencyData }: { agencyData: any }) {
                         <div className="flex items-center gap-4">
                             {formData.cover_image_url ? (
                                 <div className="relative w-full h-32 rounded-xl overflow-hidden bg-slate-100 border">
-                                    <img src={formData.cover_image_url} alt="Cover" className="w-full h-full object-cover" />
+                                    <Image
+                                        src={formData.cover_image_url}
+                                        alt="Cover"
+                                        fill
+                                        unoptimized
+                                        sizes="(max-width: 768px) 100vw, 50vw"
+                                        className="w-full h-full object-cover"
+                                    />
                                     <button
                                         type="button"
                                         onClick={() => setFormData(prev => ({ ...prev, cover_image_url: '' }))}

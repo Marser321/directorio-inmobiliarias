@@ -1,7 +1,6 @@
 'use client';
 
 import { Star, Home, MapPin } from 'lucide-react';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 export function Footer() {
@@ -104,6 +103,9 @@ export function Footer() {
                         </Link>
                         <Link href="/terminos" className="hover:text-[#D4AF37] transition-colors">
                             Términos
+                        </Link>
+                        <Link href="/legal/comisiones-inmobiliarias" className="hover:text-[#D4AF37] transition-colors">
+                            Comisiones
                         </Link>
                     </div>
                 </div>

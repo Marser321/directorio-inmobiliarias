@@ -15,7 +15,6 @@ import {
     ChevronDown,
     ArrowUpDown,
     MapPin,
-    Calendar,
     MessageSquare,
     ExternalLink,
     CheckCircle,
@@ -48,7 +47,7 @@ function StatusBadge({ status }: { status: ProspectRow['status'] }) {
     const statusConfig = {
         new: { label: 'Nuevo', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
         qualified: { label: 'Calificado', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
-        contacted: { label: 'Contactado', color: 'bg-gold/10 text-gold border-gold/20' },
+        contacted: { label: 'Contactado', color: 'bg-amber-500/10 text-amber-600 border-amber-500/25' },
         converted: { label: 'Ganado', color: 'bg-purple-500/10 text-purple-600 border-purple-500/20' },
         disqualified: { label: 'Descartado', color: 'bg-gray-500/10 text-gray-600 border-gray-500/20' },
     }
@@ -149,6 +148,33 @@ export function ProspectsTable({ prospects, onAction }: ProspectsTableProps) {
                             </button>
                         </>
                     )}
+                    {info.row.original.status === 'qualified' && (
+                        <button
+                            onClick={() => onAction(info.row.original.id, 'contact')}
+                            className="p-2 rounded-lg bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 transition-all"
+                            title="Marcar como contactado"
+                        >
+                            <MessageSquare className="w-4 h-4" />
+                        </button>
+                    )}
+                    {info.row.original.status === 'contacted' && (
+                        <>
+                            <button
+                                onClick={() => onAction(info.row.original.id, 'convert')}
+                                className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 transition-all"
+                                title="Marcar como convertido"
+                            >
+                                <CheckCircle className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={() => onAction(info.row.original.id, 'reject')}
+                                className="p-2 rounded-lg bg-red-500/10 text-red-600 hover:bg-red-500/20 transition-all"
+                                title="Descartar lead"
+                            >
+                                <XCircle className="w-4 h-4" />
+                            </button>
+                        </>
+                    )}
                     <div className="w-px h-6 bg-border/50 mx-1" />
                     <button
                         onClick={() => onAction(info.row.original.id, 'view')}
@@ -159,7 +185,7 @@ export function ProspectsTable({ prospects, onAction }: ProspectsTableProps) {
                     </button>
                     <button
                         onClick={() => onAction(info.row.original.id, 'outreach')}
-                        className="p-2 rounded-lg bg-gold/10 text-gold hover:bg-gold/20 transition-all"
+                        className="p-2 rounded-lg bg-accent-gold-soft/15 text-accent-gold-strong hover:bg-accent-gold-soft/25 transition-all"
                         title="Iniciar contacto"
                     >
                         <MessageSquare className="w-4 h-4" />
@@ -169,6 +195,7 @@ export function ProspectsTable({ prospects, onAction }: ProspectsTableProps) {
         }),
     ], [onAction])
 
+    // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table hook is expected here.
     const table = useReactTable({
         data: prospects,
         columns,
@@ -192,7 +219,7 @@ export function ProspectsTable({ prospects, onAction }: ProspectsTableProps) {
                     value={globalFilter}
                     onChange={(e) => setGlobalFilter(e.target.value)}
                     placeholder="Buscar leads..."
-                    className="w-full max-w-sm px-4 py-2 rounded-lg border border-border bg-background focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all text-sm"
+                    className="w-full max-w-sm px-4 py-2 rounded-lg border border-border bg-background focus:border-accent-gold-soft/45 focus:ring-1 focus:ring-accent-gold-soft/35 outline-none transition-all text-sm"
                 />
             </div>
 

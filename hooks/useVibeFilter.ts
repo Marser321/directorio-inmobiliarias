@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/lib/insforge/compat-supabase';
 
 // Types
 export type VibeFilterType = 'surf' | 'nightlife' | 'silence' | 'forest' | 'beach';
@@ -93,8 +93,8 @@ let supabaseClient: ReturnType<typeof createClient> | null = null;
 
 function getSupabase() {
     if (!supabaseClient) {
-        const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        const url = process.env.NEXT_PUBLIC_INSFORGE_BASE_URL;
+        const key = process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY;
 
         if (url && key) {
             supabaseClient = createClient(url, key);
@@ -231,7 +231,7 @@ export function useVibeFilter(options: UseVibeFilterOptions = {}): UseVibeFilter
                 setError(null);
 
                 // Build query based on active filters
-                let query = supabase
+                const query = supabase
                     .from('properties')
                     .select(`
             id,

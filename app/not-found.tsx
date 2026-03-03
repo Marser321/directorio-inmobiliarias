@@ -1,8 +1,7 @@
 import Link from 'next/link'
-import { headers } from 'next/headers'
 import Image from 'next/image'
 import { createClient } from '@/utils/supabase/server'
-import { Building2, ArrowRight, Home } from 'lucide-react'
+import { ArrowRight, Home } from 'lucide-react'
 
 // Luxe Components
 import { Header } from '@/components/layout/Header'
@@ -23,11 +22,9 @@ interface FeaturedProperty {
 }
 
 export default async function NotFound() {
-    const headersList = headers()
-
     const supabase = await createClient()
 
-    // Fetch more candidates to ensure randomness (e.g. 12)
+    // Fetch candidates and keep selection deterministic for stable renders.
     const { data } = await supabase
         .from('properties')
         .select('id, title, slug, main_image, description, price, currency, locations(name, type)')
@@ -36,9 +33,8 @@ export default async function NotFound() {
 
     const allSuggestions = (data as unknown as FeaturedProperty[]) || []
 
-    // Randomize: Shuffle array and take 3
-    const suggestions = allSuggestions
-        .sort(() => 0.5 - Math.random())
+    const suggestions = [...allSuggestions]
+        .sort((a, b) => String(a.id).localeCompare(String(b.id)))
         .slice(0, 3)
 
     return (
@@ -84,7 +80,7 @@ export default async function NotFound() {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                {suggestions.map((property, idx) => (
+                                {suggestions.map((property) => (
                                     <Link
                                         key={property.id}
                                         href={`/property/${property.slug}`}
@@ -92,7 +88,7 @@ export default async function NotFound() {
                                     >
                                         <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-4 bg-muted">
                                             <Image
-                                                src={property.main_image || '/placeholder-property.jpg'}
+                                                src={property.main_image || '/images/placeholders/luxury-villa.jpg'}
                                                 alt={property.title}
                                                 fill
                                                 className="object-cover transition-transform duration-700 group-hover:scale-110"

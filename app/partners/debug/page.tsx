@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 
 export default function DebugPage() {
@@ -17,18 +18,19 @@ export default function DebugPage() {
                 const val = window.localStorage.getItem('test')
                 window.localStorage.removeItem('test')
                 addLog(`✅ LocalStorage OK (val=${val})`)
-            } catch (e: any) {
-                addLog(`❌ LocalStorage FAILED: ${e.message}`)
+            } catch (e: unknown) {
+                const message = e instanceof Error ? e.message : 'Unknown error'
+                addLog(`❌ LocalStorage FAILED: ${message}`)
             }
 
             // 2. Check Supabase Config
             const supabase = createSupabaseBrowserClient()
-            const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-            const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+            const url = process.env.NEXT_PUBLIC_INSFORGE_BASE_URL
+            const key = process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY
             addLog(`ℹ️ Supabase Config: URL=${url ? 'Yes' : 'MISSING'}, Key=${key ? 'Yes' : 'MISSING'}`)
 
             if (!url) {
-                addLog('❌ FATAL: NEXT_PUBLIC_SUPABASE_URL is missing!')
+                addLog('❌ FATAL: NEXT_PUBLIC_INSFORGE_BASE_URL is missing!')
                 return
             }
 
@@ -47,11 +49,12 @@ export default function DebugPage() {
                 })
                 clearTimeout(timeoutId)
                 addLog(`✅ Connectivity OK: Status ${res.status} ${res.statusText}`)
-            } catch (e: any) {
-                if (e.name === 'AbortError') {
+            } catch (e: unknown) {
+                if (e instanceof Error && e.name === 'AbortError') {
                     addLog('❌ Connectivity TIMED OUT (5s). Network blocked?')
                 } else {
-                    addLog(`❌ Connectivity FAILED: ${e.message}`)
+                    const message = e instanceof Error ? e.message : 'Unknown error'
+                    addLog(`❌ Connectivity FAILED: ${message}`)
                 }
             }
 
@@ -61,7 +64,8 @@ export default function DebugPage() {
                 const sessionPromise = supabase.auth.getSession()
                 const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout 5s')), 5000))
 
-                const { data, error }: any = await Promise.race([sessionPromise, timeoutPromise])
+                const sessionResult = await Promise.race([sessionPromise, timeoutPromise]) as Awaited<typeof sessionPromise>
+                const { data, error } = sessionResult
 
                 if (error) {
                     addLog(`❌ getSession Error: ${error.message}`)
@@ -71,8 +75,9 @@ export default function DebugPage() {
                         addLog(`   User: ${data.session.user.email}`)
                     }
                 }
-            } catch (e: any) {
-                addLog(`❌ getSession CRASH/TIMEOUT: ${e.message}`)
+            } catch (e: unknown) {
+                const message = e instanceof Error ? e.message : 'Unknown error'
+                addLog(`❌ getSession CRASH/TIMEOUT: ${message}`)
             }
 
             addLog('🏁 DIAGNOSTICS COMPLETE')
@@ -96,12 +101,12 @@ export default function DebugPage() {
                 >
                     Run Again
                 </button>
-                <a
+                <Link
                     href="/partners/dashboard"
                     className="ml-4 text-gray-400 hover:text-white underline"
                 >
                     Back to Dashboard
-                </a>
+                </Link>
             </div>
         </div>
     )

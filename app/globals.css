@@ -1,64 +1,11 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-
-@custom-variant dark (&:is(.dark *));
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* ============================================
    LUXE ESTATE DESIGN SYSTEM
    Paleta: Alabaster White + Onyx Black + Champagne Gold
    ============================================ */
-
-@theme inline {
-  /* Colors */
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-accent: var(--accent);
-  --color-muted: var(--muted);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-
-  /* Luxe Gold */
-  --color-gold: var(--gold);
-  --color-gold-light: var(--gold-light);
-  --color-gold-dark: var(--gold-dark);
-
-  /* Lifestyle Vibe Colors */
-  --color-vibe-nightlife: #FF6B6B;  /* Coral vibrante */
-  --color-vibe-silence: #4ECDC4;    /* Turquesa sereno */
-  --color-vibe-golf: #2D5016;       /* Verde bosque */
-  --color-vibe-surf: #0077B6;       /* Azul océano */
-  --color-vibe-family: #F4A261;     /* Naranja cálido */
-
-  /* Fonts */
-  --font-sans: var(--font-inter);
-  --font-serif: var(--font-playfair);
-  --font-mono: var(--font-geist-mono);
-
-  /* Radius */
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
-
-  /* Cinematic Transitions */
-  --transition-cinematic: 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-  --transition-smooth: 0.3s ease-out;
-}
 
 :root {
   /* Base Radius */
@@ -103,6 +50,17 @@
   --border: #E5E5E0;
   --input: #E5E5E0;
   --ring: #D4AF37;
+
+  /* Editorial Depth Tokens (theme lab ready) */
+  --surface-0: #faf8f3;
+  --surface-1: #f4efe5;
+  --surface-2: #ece4d7;
+  --ink-strong: #1e1a14;
+  --ink-soft: #6f6658;
+  --accent-gold-soft: #b99a4a;
+  --accent-gold-strong: #8f742d;
+  --texture-grain-opacity: 0.05;
+  --photo-overlay-opacity: 0.35;
 }
 
 .dark {
@@ -124,16 +82,50 @@
   --border: rgba(255, 255, 255, 0.1);
   --input: rgba(255, 255, 255, 0.15);
   --ring: #D4AF37;
+
+  --surface-0: #13110f;
+  --surface-1: #1b1814;
+  --surface-2: #252018;
+  --ink-strong: #f5f0e6;
+  --ink-soft: #c8bdaa;
+  --accent-gold-soft: #cab274;
+  --accent-gold-strong: #e2cf98;
+  --texture-grain-opacity: 0.06;
+  --photo-overlay-opacity: 0.5;
+}
+
+/* Theme Lab: editorial warm layer (enabled by body class) */
+.theme-lab-editorial {
+  --background: var(--surface-0);
+  --foreground: var(--ink-strong);
+  --card: #fffdf8;
+  --card-foreground: var(--ink-strong);
+  --secondary: var(--surface-1);
+  --secondary-foreground: var(--ink-strong);
+  --muted: var(--surface-1);
+  --muted-foreground: var(--ink-soft);
+  --border: #ddd1bd;
+  --input: #ded5c7;
+  --ring: var(--accent-gold-soft);
+  --primary: var(--accent-gold-soft);
+  --primary-foreground: #fffef9;
+  --accent: var(--accent-gold-soft);
+  --accent-foreground: #fffef9;
+  --gold: var(--accent-gold-soft);
+  --gold-light: color-mix(in srgb, var(--accent-gold-soft) 78%, #fff 22%);
+  --gold-dark: var(--accent-gold-strong);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
+    outline-color: color-mix(in srgb, var(--ring) 50%, transparent);
   }
 
   body {
     @apply bg-background text-foreground antialiased;
     background-image: radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.03) 0%, transparent 50%);
+    background-attachment: fixed;
   }
 
   ::selection {
@@ -171,6 +163,60 @@
     @apply bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-xl;
   }
 
+  .bg-editorial-layer {
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--surface-0) 88%, #fff 12%) 0%, var(--surface-0) 65%, var(--surface-1) 100%);
+  }
+
+  .bg-grain-subtle {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .bg-grain-subtle::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: var(--texture-grain-opacity);
+    background-image:
+      radial-gradient(circle at 20% 20%, #000 0.4px, transparent 0.6px),
+      radial-gradient(circle at 80% 40%, #000 0.4px, transparent 0.6px),
+      radial-gradient(circle at 30% 80%, #000 0.4px, transparent 0.6px);
+    background-size: 22px 22px, 26px 26px, 24px 24px;
+  }
+
+  .bg-photo-fade {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .bg-photo-fade::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    background: linear-gradient(
+      180deg,
+      rgba(18, 16, 12, calc(var(--photo-overlay-opacity) * 0.55)) 0%,
+      rgba(18, 16, 12, var(--photo-overlay-opacity)) 54%,
+      rgba(18, 16, 12, calc(var(--photo-overlay-opacity) + 0.2)) 100%
+    );
+  }
+
+  .section-divider-soft {
+    height: 1px;
+    width: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--accent-gold-soft) 45%, var(--border) 55%) 50%,
+      transparent 100%
+    );
+  }
+
   /* Hover Glow Effect for Buttons */
   .btn-luxe {
     @apply relative overflow-hidden transition-all duration-300;
@@ -191,8 +237,8 @@
   }
 
   .btn-luxe:hover {
-    box-shadow: 0 0 30px rgba(212, 175, 55, 0.4), 0 0 60px rgba(212, 175, 55, 0.2);
-    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -12px rgba(165, 133, 56, 0.45);
+    transform: translateY(-1px);
   }
 
   /* Property Card Hover Effect */
@@ -201,8 +247,8 @@
   }
 
   .property-card:hover {
-    @apply -translate-y-2;
-    box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.1), 0 0 20px -3px rgba(212, 175, 55, 0.15);
+    @apply -translate-y-1;
+    box-shadow: 0 16px 30px -14px rgba(20, 16, 8, 0.22);
   }
 
   .property-card:hover .property-card-image {
@@ -344,5 +390,15 @@
     100% {
       transform: translateX(100%);
     }
+  }
+}
+
+/* Motion hardening for accessibility and runtime stability */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

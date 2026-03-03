@@ -1,7 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface ScrollRevealSectionProps {
     children: React.ReactNode;
@@ -16,27 +15,8 @@ export function ScrollRevealSection({
     delay = 0,
     direction = 'up'
 }: ScrollRevealSectionProps) {
-    const ref = useRef<HTMLDivElement>(null);
-
-    const { scrollYProgress } = useScroll({
-        target: ref,
-        offset: ['start end', 'end start']
-    });
-
-    const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
-
-    const directionMap = {
-        up: { y: [60, 0, 0, -60] },
-        down: { y: [-60, 0, 0, 60] },
-        left: { x: [60, 0, 0, -60] },
-        right: { x: [-60, 0, 0, 60] }
-    };
-
-    const movement = directionMap[direction];
-
     return (
         <motion.div
-            ref={ref}
             initial={{ opacity: 0, y: direction === 'up' ? 60 : direction === 'down' ? -60 : 0, x: direction === 'left' ? 60 : direction === 'right' ? -60 : 0 }}
             whileInView={{ opacity: 1, y: 0, x: 0 }}
             viewport={{ once: true, margin: '-50px' }}

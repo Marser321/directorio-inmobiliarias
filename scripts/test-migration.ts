@@ -5,10 +5,10 @@
 import { config } from 'dotenv'
 config({ path: '.env.local' })
 
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/insforge/compat-supabase'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_INSFORGE_BASE_URL!
+const supabaseServiceKey = process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY!
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
@@ -74,9 +74,9 @@ async function applyMigration() {
     }
 
     console.log('\n📄 Instrucciones para agregar columnas faltantes:')
-    console.log('   1. Ve a https://supabase.com/dashboard/project/vzyjvlppwzjjmscvkaqg/sql')
+    console.log('   1. Usa el MCP de InsForge (`run-raw-sql`) sobre tu backend actual')
     console.log('   2. Copia y ejecuta el contenido de:')
-    console.log('      supabase/migrations/20260209_enhance_agencies.sql')
+    console.log('      insforge/schema.sql (o migración equivalente vigente)')
     console.log('')
 }
 

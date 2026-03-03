@@ -1,68 +1,65 @@
+import { config } from 'dotenv'
 
-import { createClient } from '@supabase/supabase-js'
-import dotenv from 'dotenv'
+config({ path: '.env.local' })
 
-dotenv.config({ path: '.env.local' })
-
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+import { createAdminClient } from '@/utils/supabase/admin'
 
 async function debugDashboardAccess() {
-    console.log('🔍 Starting Dashboard Access Debug...')
+  const supabase = createAdminClient()
+  console.log('Starting dashboard access debug (v2)...')
 
-    // 1. Get recent users
-    const { data: users, error: usersError } = await supabase.auth.admin.listUsers({
-        page: 1,
-        perPage: 5
-    })
+  const { data: users, error: usersError } = await supabase.auth.admin.listUsers({
+    page: 1,
+    perPage: 5,
+  })
 
-    if (usersError) {
-        console.error('❌ Error fetching users:', usersError)
-        return
+  if (usersError || !users?.users) {
+    throw new Error(`Failed to fetch users: ${usersError?.message || 'empty result'}`)
+  }
+
+  console.log(`Found ${users.users.length} recent users.`)
+
+  for (const user of users.users) {
+    console.log('\n------------------------------------------------')
+    console.log(`User: ${user.email} (${user.id})`)
+    console.log(`Created At: ${user.created_at}`)
+    console.log(`Email Confirmed: ${user.email_confirmed_at}`)
+
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, role, is_admin, agency_id')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    if (profileError) {
+      console.log(`Profile error: ${profileError.message} (Code: ${profileError.code})`)
+    } else if (!profile) {
+      console.log('Profile missing: no row in public.profiles')
+    } else {
+      console.log(`Profile: role=${profile.role}, is_admin=${profile.is_admin}, agency_id=${profile.agency_id}`)
     }
 
-    console.log(`Found ${users.users.length} recent users.`)
+    const { data: membership, error: membershipError } = await supabase
+      .from('agency_memberships')
+      .select('agency_id, role, agencies(name, slug)')
+      .eq('user_id', user.id)
+      .maybeSingle()
 
-    for (const user of users.users) {
-        console.log(`\n------------------------------------------------`)
-        console.log(`User: ${user.email} (ID: ${user.id})`)
-        console.log(`Created At: ${user.created_at}`)
-        console.log(`Confirmed At: ${user.email_confirmed_at}`)
-        console.log(`Metadata:`, user.user_metadata)
-
-        // 2. Check Profile
-        const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single()
-
-        if (profileError) {
-            console.log(`❌ Profile Error: ${profileError.message} (Code: ${profileError.code})`)
-        } else {
-            console.log(`✅ Profile Found: Role=${profile.role}, AgencyID=${profile.agency_id}`)
-        }
-
-        // 3. Check Agency Users Link
-        const { data: agencyUser, error: auError } = await supabase
-            .from('agency_users')
-            .select('*, agencies(name, slug)')
-            .eq('user_id', user.id)
-            .single() // Expecting one agency per user for now
-
-        if (auError) {
-            console.log(`❌ Agency Link Error: ${auError.message} (Code: ${auError.code})`)
-            if (auError.code === 'PGRST116') {
-                console.log(`   -> This user has NO rows in agency_users table. THIS IS THE ISSUE if they should have one.`)
-            }
-        } else {
-            console.log(`✅ Agency Link Found!`)
-            console.log(`   -> Agency: ${agencyUser.agencies?.name} (Slug: ${agencyUser.agencies?.slug})`)
-            console.log(`   -> Role in Agency: ${agencyUser.role}`)
-        }
+    if (membershipError) {
+      console.log(`Membership error: ${membershipError.message} (Code: ${membershipError.code})`)
+    } else if (!membership) {
+      console.log('Membership missing: no row in public.agency_memberships')
+    } else {
+      const agency = Array.isArray(membership.agencies)
+        ? membership.agencies[0]
+        : membership.agencies
+      console.log(`Membership: agency_id=${membership.agency_id}, role=${membership.role}`)
+      console.log(`Agency: ${agency?.name || 'unknown'} (${agency?.slug || 'n/a'})`)
     }
+  }
 }
 
-debugDashboardAccess()
+void debugDashboardAccess().catch((error: unknown) => {
+  console.error(error instanceof Error ? error.message : String(error))
+  process.exit(1)
+})

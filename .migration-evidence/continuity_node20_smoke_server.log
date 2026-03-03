@@ -1,0 +1,66 @@
+
+> realpde@0.1.0 predev
+> node scripts/check-env.mjs --require-public --warn-server --context dev
+
+[dotenv@17.2.4] injecting env (12) from .env.local -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+[check-env] Warnings for context "dev"
+Warnings:
+- No privileged DB key found (INSFORGE_SERVICE_ROLE_KEY / SUPABASE_SERVICE_ROLE_KEY / INSFORGE_ADMIN_API_KEY).
+- Missing optional privileged variables: STRIPE_WEBHOOK_SECRET
+[check-env] OK (dev)
+
+> realpde@0.1.0 dev
+> next dev --webpack
+
+▲ Next.js 16.1.6 (webpack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.4:3000
+- Environments: .env.local
+
+✓ Starting...
+✓ Ready in 1248ms
+ GET /api/health/config 200 in 430ms (compile: 415ms, render: 15ms)
+ GET / 200 in 2.6s (compile: 1345ms, proxy.ts: 33ms, render: 1243ms)
+ GET /search 200 in 1158ms (compile: 734ms, proxy.ts: 5ms, render: 419ms)
+ GET /explore 200 in 654ms (compile: 318ms, proxy.ts: 3ms, render: 332ms)
+ GET /partners 200 in 642ms (compile: 313ms, proxy.ts: 3ms, render: 326ms)
+ GET /partners/login 200 in 738ms (compile: 409ms, proxy.ts: 3ms, render: 326ms)
+ GET /partners/registro 200 in 811ms (compile: 476ms, proxy.ts: 3ms, render: 332ms)
+ GET /demo-antigravity 200 in 714ms (compile: 391ms, proxy.ts: 3ms, render: 320ms)
+ GET /lifestyle/golf 307 in 106ms (compile: 5ms, proxy.ts: 2ms, render: 99ms)
+ GET /lifestyle/urban 307 in 74ms (compile: 3ms, proxy.ts: 3ms, render: 68ms)
+ GET /lifestyle/beachfront 307 in 1109ms (compile: 828ms, proxy.ts: 1904µs, render: 279ms)
+ GET /lifestyle/farm 307 in 687ms (compile: 2ms, proxy.ts: 2ms, render: 682ms)
+ GET /property/3 200 in 3.0s (compile: 2.1s, proxy.ts: 7ms, render: 912ms)
+ GET /property/1 200 in 219ms (compile: 3ms, proxy.ts: 3ms, render: 213ms)
+ GET /property/12 200 in 215ms (compile: 2ms, proxy.ts: 1793µs, render: 211ms)
+ GET /property/8 200 in 195ms (compile: 3ms, proxy.ts: 1678µs, render: 190ms)
+ GET /property/6 200 in 192ms (compile: 2ms, proxy.ts: 3ms, render: 187ms)
+ GET /property/2 200 in 194ms (compile: 4ms, proxy.ts: 1808µs, render: 189ms)
+ GET /privacidad 200 in 1318ms (compile: 958ms, proxy.ts: 2ms, render: 358ms)
+ GET /terminos 200 in 849ms (compile: 533ms, proxy.ts: 3ms, render: 313ms)
+ GET / 200 in 332ms (compile: 12ms, proxy.ts: 1735µs, render: 319ms)
+ GET /search 200 in 210ms (compile: 10ms, proxy.ts: 1826µs, render: 197ms)
+ GET /partners 200 in 190ms (compile: 9ms, proxy.ts: 1826µs, render: 179ms)
+ GET /partners/registro 200 in 242ms (compile: 10ms, proxy.ts: 1823µs, render: 230ms)
+ GET /lifestyle/urban 307 in 187ms (compile: 2ms, proxy.ts: 3ms, render: 182ms)
+ GET /lifestyle/farm 307 in 184ms (compile: 2ms, proxy.ts: 2ms, render: 180ms)
+ GET /lifestyle/beachfront 307 in 499ms (compile: 10ms, proxy.ts: 1924µs, render: 487ms)
+ GET /lifestyle/golf 307 in 473ms (compile: 3ms, proxy.ts: 2ms, render: 468ms)
+ GET /property/3 200 in 852ms (compile: 13ms, proxy.ts: 1993µs, render: 837ms)
+ GET /property/1 200 in 224ms (compile: 4ms, proxy.ts: 3ms, render: 217ms)
+ GET /property/12 200 in 217ms (compile: 2ms, proxy.ts: 4ms, render: 211ms)
+ GET /property/8 200 in 211ms (compile: 4ms, proxy.ts: 3ms, render: 204ms)
+ GET /property/6 200 in 220ms (compile: 2ms, proxy.ts: 3ms, render: 215ms)
+ GET /property/2 200 in 231ms (compile: 4ms, proxy.ts: 3ms, render: 224ms)
+ GET /privacidad 200 in 111ms (compile: 6ms, proxy.ts: 4ms, render: 101ms)
+ GET /terminos 200 in 83ms (compile: 1119µs, proxy.ts: 2ms, render: 79ms)
+ GET /api/auth/me 200 in 674ms (compile: 666ms, render: 8ms)
+ GET /api/marketing/tiers 200 in 801ms (compile: 633ms, render: 168ms)
+ GET /api/marketing/requests 401 in 536ms (compile: 532ms, render: 4ms)
+ POST /api/partners/onboarding 401 in 522ms (compile: 517ms, render: 5ms)
+ POST /api/partners/properties 401 in 598ms (compile: 593ms, render: 5ms)
+ POST /api/stripe/checkout/featured 401 in 613ms (compile: 608ms, render: 5ms)
+ POST /api/stripe/checkout/subscription 401 in 570ms (compile: 565ms, render: 5ms)
+ POST /api/stripe/checkout/service-request 401 in 568ms (compile: 563ms, render: 5ms)
+[?25h

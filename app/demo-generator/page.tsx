@@ -1,5 +1,13 @@
 import { GeneratorForm } from "@/components/demo-generator/GeneratorForm";
 
+export const metadata = {
+    title: 'Demo Generator',
+    robots: {
+        index: false,
+        follow: false,
+    },
+};
+
 export default function DemoGeneratorPage() {
     return (
         <div className="min-h-screen bg-black text-white relative overflow-hidden flex flex-col items-center justify-center p-4">

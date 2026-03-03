@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 're
 import MarkerClusterGroup from 'react-leaflet-cluster'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
-import { useEffect, useCallback, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { PropertyWithLocation } from '@/hooks/usePropertySearch'
 import { MapBounds } from '@/hooks/useMapBounds'
 import Link from 'next/link'
@@ -61,6 +61,15 @@ interface MapEventsHandlerProps {
     isSearchAsMove: boolean
 }
 
+function hasCoordinates(property: PropertyWithLocation): property is PropertyWithLocation & { lat: number; lng: number } {
+    return (
+        typeof property.lat === 'number' &&
+        Number.isFinite(property.lat) &&
+        typeof property.lng === 'number' &&
+        Number.isFinite(property.lng)
+    )
+}
+
 function MapEventsHandler({ onBoundsChange, isSearchAsMove }: MapEventsHandlerProps) {
     const map = useMapEvents({
         moveend: () => {
@@ -88,8 +97,8 @@ function FitBoundsToMarkers({ properties }: FitBoundsProps) {
     useEffect(() => {
         if (properties.length > 0) {
             const validCoords = properties
-                .filter(p => p.lat && p.lng)
-                .map(p => [p.lat!, p.lng!] as [number, number])
+                .filter(hasCoordinates)
+                .map((property) => [property.lat, property.lng] as [number, number])
 
             if (validCoords.length > 0) {
                 const bounds = L.latLngBounds(validCoords)
@@ -101,16 +110,11 @@ function FitBoundsToMarkers({ properties }: FitBoundsProps) {
     return null
 }
 
-interface PropertyMarkerProps {
-    property: PropertyWithLocation
-    isHighlighted: boolean
-    onHover: (id: number | null) => void
-}
-
 function PropertyMarkerPopup({ property }: { property: PropertyWithLocation }) {
     return (
         <div className="min-w-[200px] -m-3">
             {property.main_image && (
+                /* eslint-disable-next-line @next/next/no-img-element */
                 <img
                     src={property.main_image}
                     alt={property.title}
@@ -161,7 +165,7 @@ export default function ClusteredMap({
     // Memoize markers to prevent unnecessary re-renders
     const markers = useMemo(() => {
         return properties
-            .filter(p => p.lat && p.lng)
+            .filter(hasCoordinates)
             .map(property => {
                 const isHighlighted = property.id === highlightedPropertyId
                 const icon = createPropertyIcon(
@@ -172,7 +176,7 @@ export default function ClusteredMap({
                 return (
                     <Marker
                         key={property.id}
-                        position={[property.lat!, property.lng!]}
+                        position={[property.lat, property.lng]}
                         icon={icon}
                         eventHandlers={{
                             mouseover: () => onPropertyHover(property.id),
@@ -192,7 +196,7 @@ export default function ClusteredMap({
             <MapContainer
                 center={[CENTER_LAT, CENTER_LNG]}
                 zoom={11}
-                scrollWheelZoom={true}
+                scrollWheelZoom={false}
                 className="w-full h-full z-0"
                 style={{ background: '#f1f5f9' }}
             >

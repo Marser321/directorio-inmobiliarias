@@ -141,19 +141,20 @@ export function InvestmentPotential({ locationQuery }: InvestmentPotentialProps)
         <section className="py-12">
             <div className="mb-8">
                 <h3 className="text-2xl font-serif font-bold text-foreground flex items-center gap-3">
-                    <TrendingUp className="text-[#D4AF37]" />
+                    <TrendingUp className="text-accent-gold-soft" />
                     Potencial de Inversión
                 </h3>
                 <p className="text-muted-foreground mt-2">
                     Basado en comparables reales {locationQuery ? `de ${locationQuery}` : 'de la zona'}.
                 </p>
+                <div className="section-divider-soft mt-4" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 bg-muted/30 border border-border rounded-2xl p-6 shadow-sm">
+                <div className="lg:col-span-2 bg-card/80 border border-border/70 rounded-2xl p-6 shadow-sm">
                     <div className="flex justify-between items-center mb-6">
                         <h4 className="font-semibold text-lg">Evolución histórica (USD/m²)</h4>
-                        <div className="flex items-center gap-2 text-sm text-[#D4AF37] font-medium bg-[#D4AF37]/10 px-3 py-1 rounded-full">
+                        <div className="flex items-center gap-2 rounded-full bg-accent-gold-soft/10 px-3 py-1 text-sm font-medium text-accent-gold-strong">
                             <TrendingUp className="w-4 h-4" />
                             {chartData.length > 1 ? `${yearlyVariation}% interanual` : 'Sin histórico suficiente'}
                         </div>
@@ -184,8 +185,8 @@ export function InvestmentPotential({ locationQuery }: InvestmentPotentialProps)
                                 <AreaChart data={chartData}>
                                     <defs>
                                         <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.3} />
-                                            <stop offset="95%" stopColor="#D4AF37" stopOpacity={0} />
+                                            <stop offset="5%" stopColor="var(--accent-gold-soft)" stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor="var(--accent-gold-soft)" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(128,128,128,0.2)" />
@@ -215,7 +216,7 @@ export function InvestmentPotential({ locationQuery }: InvestmentPotentialProps)
                                     <Area
                                         type="monotone"
                                         dataKey="value"
-                                        stroke="#D4AF37"
+                                        stroke="var(--accent-gold-soft)"
                                         strokeWidth={3}
                                         fillOpacity={1}
                                         fill="url(#colorValue)"
@@ -266,11 +267,11 @@ function MetricCard({ label, value, suffix = "", prefix = "", icon: Icon, subtex
     return (
         <motion.div
             whileHover={{ y: -5 }}
-            className="bg-card border border-border rounded-xl p-5 shadow-sm hover:shadow-md transition-all"
+            className="bg-card border border-border/70 rounded-xl p-5 shadow-sm hover:shadow-md transition-all"
         >
             <div className="flex justify-between items-start mb-2">
                 <p className="text-sm text-muted-foreground font-medium">{label}</p>
-                <div className="p-2 bg-[#D4AF37]/10 rounded-lg text-[#D4AF37]">
+                <div className="p-2 rounded-lg bg-accent-gold-soft/10 text-accent-gold-strong">
                     <Icon className="w-5 h-5" />
                 </div>
             </div>

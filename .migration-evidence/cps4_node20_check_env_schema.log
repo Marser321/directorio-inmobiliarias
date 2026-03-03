@@ -1,0 +1,4 @@
+[dotenv@17.2.4] injecting env (23) from .env.local -- tip: ⚙️  write to custom object with { processEnv: myObject }
+Warnings:
+- Missing optional privileged variables: STRIPE_WEBHOOK_SECRET
+[check-env] OK (node20:test:schema)

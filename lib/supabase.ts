@@ -1,17 +1,10 @@
+import { createClient } from '@/lib/insforge/compat-supabase'
 
-import { createClient } from '@supabase/supabase-js'
-import { Database } from '@/types/database.types'
+const baseUrl = process.env.NEXT_PUBLIC_INSFORGE_BASE_URL
+const anonKey = process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY
 
-// Ensure we have the environment variables
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Missing Supabase environment variables. Check .env.local')
+if (!baseUrl || !anonKey) {
+  console.warn('Missing InsForge environment variables. Check .env.local')
 }
 
-// Create a single supabase client for interacting with your database
-export const supabase = createClient<Database>(
-  supabaseUrl || '',
-  supabaseAnonKey || ''
-)
+export const supabase = createClient(baseUrl || '', anonKey || '')

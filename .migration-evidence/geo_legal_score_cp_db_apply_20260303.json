@@ -1,0 +1,129 @@
+{
+  "backend": "https://dpxpa3f5.us-east.insforge.app",
+  "startedAt": "2026-03-03T20:20:14.235Z",
+  "checkpoints": [
+    {
+      "checkpoint": "CP0",
+      "step": "initialize",
+      "timestamp_utc": "2026-03-03T20:20:16.005Z",
+      "result": "ok"
+    },
+    {
+      "checkpoint": "CP0",
+      "step": "tools-list",
+      "timestamp_utc": "2026-03-03T20:20:16.009Z",
+      "result": [
+        "fetch-docs",
+        "fetch-sdk-docs",
+        "get-anon-key",
+        "get-table-schema",
+        "get-backend-metadata",
+        "run-raw-sql",
+        "download-template",
+        "bulk-upsert",
+        "create-bucket",
+        "list-buckets",
+        "delete-bucket",
+        "create-function",
+        "get-function",
+        "update-function",
+        "delete-function",
+        "get-container-logs",
+        "create-deployment"
+      ]
+    },
+    {
+      "checkpoint": "CP1",
+      "step": "get-backend-metadata",
+      "timestamp_utc": "2026-03-03T20:20:16.591Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Backend metadata:\n\n{\n  \"auth\": {\n    \"oAuthProviders\": [\n      \"github\",\n      \"google\"\n    ],\n    \"requireEmailVerification\": true,\n    \"passwordMinLength\": 6,\n    \"requireNumber\": false,\n    \"requireLowercase\": false,\n    \"requireUppercase\": false,\n    \"requireSpecialChar\": false,\n    \"verifyEmailMethod\": \"code\",\n    \"resetPasswordMethod\": \"code\"\n  },\n  \"database\": {\n    \"tables\": [\n      {\n        \"tableName\": \"agencies\",\n        \"recordCount\": 4\n      },\n      {\n        \"tableName\": \"agency_memberships\",\n        \"recordCount\": 1\n      },\n      {\n        \"tableName\": \"agency_users\",\n        \"recordCount\": 0\n      },\n      {\n        \"tableName\": \"funnel_events\",\n        \"recordCount\": 0\n      },\n      {\n        \"tableName\": \"leads\",\n        \"recordCount\": 0\n      },\n      {\n        \"tableName\": \"locations\",\n        \"recordCount\": 15\n      },\n      {\n        \"tableName\": \"profiles\",\n        \"recordCount\": 1\n      },\n      {\n        \"tableName\": \"properties\",\n        \"recordCount\": 12\n      },\n      {\n        \"tableName\": \"property_images\",\n        \"recordCount\": 0\n      },\n      {\n        \"tableName\": \"property_leads\",\n        \"recordCount\": 27\n      },\n      {\n        \"tableName\": \"property_media\",\n        \"recordCount\": 0\n      },\n      {\n        \"tableName\": \"saved_searches\",\n        \"recordCount\": 0\n      },\n      {\n        \"tableName\": \"search_alert_deliveries\",\n        \"recordCount\": 0\n      },\n      {\n        \"tableName\": \"search_queries\",\n        \"recordCount\": 0\n      },\n      {\n        \"tableName\": \"service_requests\",\n        \"recordCount\": 0\n      },\n      {\n        \"tableName\": \"service_tiers\",\n        \"recordCount\": 0\n      },\n      {\n        \"tableName\": \"stripe_webhook_events\",\n        \"recordCount\": 0\n      },\n      {\n        \"tableName\": \"user_funnel_events\",\n        \"recordCount\": 220\n      },\n      {\n        \"tableName\": \"user_saved_properties\",\n        \"recordCount\": 0\n      },\n      {\n        \"tableName\": \"vibe_scores\",\n        \"recordCount\": 0\n      }\n    ],\n    \"totalSizeInGB\": 0.010685726068913937,\n    \"hint\": \"To retrieve detailed schema information for a specific table, call the get-table-schema tool with the table name.\"\n  },\n  \"storage\": {\n    \"buckets\": [\n      {\n        \"name\": \"agency-logos\",\n        \"public\": true,\n        \"createdAt\": \"2026-03-03T00:16:43.755Z\",\n        \"objectCount\": 0\n      },\n      {\n        \"name\": \"property-images\",\n        \"public\": true,\n        \"createdAt\": \"2026-03-02T22:12:22.762Z\",\n        \"objectCount\": 0\n      }\n    ],\n    \"totalSizeInGB\": 0\n  },\n  \"functions\": [],\n  \"aiIntegration\": {\n    \"models\": [\n      {\n        \"inputModality\": [\n          \"text\",\n          \"image\"\n        ],\n        \"outputModality\": [\n          \"text\"\n        ],\n        \"modelId\": \"deepseek/deepseek-v3.2\"\n      },\n      {\n        \"inputModality\": [\n          \"text\",\n          \"image\"\n        ],\n        \"outputModality\": [\n          \"text\"\n        ],\n        \"modelId\": \"minimax/minimax-m2.1\"\n      },\n      {\n        \"inputModality\": [\n          \"text\",\n          \"image\"\n        ],\n        \"outputModality\": [\n          \"text\"\n        ],\n        \"modelId\": \"x-ai/grok-4.1-fast\"\n      },\n      {\n        \"inputModality\": [\n          \"text\",\n          \"image\"\n        ],\n        \"outputModality\": [\n          \"text\"\n        ],\n        \"modelId\": \"anthropic/claude-sonnet-4.5\"\n      },\n      {\n        \"inputModality\": [\n          \"text\",\n          \"image\"\n        ],\n        \"outputModality\": [\n          \"text\"\n        ],\n        \"modelId\": \"openai/gpt-4o-mini\"\n      },\n      {\n        \"inputModality\": [\n          \"text\",\n          \"image\"\n        ],\n        \"outputModality\": [\n          \"text\",\n          \"image\"\n        ],\n        \"modelId\": \"google/gemini-3-pro-image-preview\"\n      }\n    ]\n  },\n  \"version\": \"1.0.0\"\n}"
+          }
+        ]
+      }
+    },
+    {
+      "checkpoint": "CP1",
+      "step": "run-raw-sql-select-1",
+      "timestamp_utc": "2026-03-03T20:20:16.899Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "SQL query executed completed successfully:\n{\n  \"rows\": [\n    {\n      \"ok\": 1\n    }\n  ],\n  \"rowCount\": 1,\n  \"fields\": [\n    {\n      \"name\": \"ok\",\n      \"dataTypeID\": 23\n    }\n  ]\n}"
+          }
+        ]
+      }
+    },
+    {
+      "checkpoint": "CP1",
+      "step": "baseline-pre-migration",
+      "timestamp_utc": "2026-03-03T20:20:17.216Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "SQL query executed completed successfully:\n{\n  \"rows\": [\n    {\n      \"agency_commission_profiles\": false,\n      \"commission_operation_type\": false,\n      \"commission_model\": false,\n      \"commission_verification_status\": false\n    }\n  ],\n  \"rowCount\": 1,\n  \"fields\": [\n    {\n      \"name\": \"agency_commission_profiles\",\n      \"dataTypeID\": 16\n    },\n    {\n      \"name\": \"commission_operation_type\",\n      \"dataTypeID\": 16\n    },\n    {\n      \"name\": \"commission_model\",\n      \"dataTypeID\": 16\n    },\n    {\n      \"name\": \"commission_verification_status\",\n      \"dataTypeID\": 16\n    }\n  ]\n}"
+          }
+        ]
+      }
+    },
+    {
+      "checkpoint": "CP2",
+      "step": "apply-20260304-agency-commission-profiles",
+      "timestamp_utc": "2026-03-03T20:20:17.571Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "SQL query executed completed successfully:\n{\n  \"rows\": []\n}"
+          }
+        ]
+      }
+    },
+    {
+      "checkpoint": "CP3",
+      "step": "post-objects-check",
+      "timestamp_utc": "2026-03-03T20:20:17.881Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "SQL query executed completed successfully:\n{\n  \"rows\": [\n    {\n      \"agency_commission_profiles\": true,\n      \"commission_operation_type\": true,\n      \"commission_model\": true,\n      \"commission_verification_status\": true\n    }\n  ],\n  \"rowCount\": 1,\n  \"fields\": [\n    {\n      \"name\": \"agency_commission_profiles\",\n      \"dataTypeID\": 16\n    },\n    {\n      \"name\": \"commission_operation_type\",\n      \"dataTypeID\": 16\n    },\n    {\n      \"name\": \"commission_model\",\n      \"dataTypeID\": 16\n    },\n    {\n      \"name\": \"commission_verification_status\",\n      \"dataTypeID\": 16\n    }\n  ]\n}"
+          }
+        ]
+      }
+    },
+    {
+      "checkpoint": "CP3",
+      "step": "post-rls-policies-check",
+      "timestamp_utc": "2026-03-03T20:20:18.188Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "SQL query executed completed successfully:\n{\n  \"rows\": [\n    {\n      \"tablename\": \"agency_commission_profiles\",\n      \"policyname\": \"agency_commission_profiles_delete_policy\"\n    },\n    {\n      \"tablename\": \"agency_commission_profiles\",\n      \"policyname\": \"agency_commission_profiles_insert_policy\"\n    },\n    {\n      \"tablename\": \"agency_commission_profiles\",\n      \"policyname\": \"agency_commission_profiles_public_read_policy\"\n    },\n    {\n      \"tablename\": \"agency_commission_profiles\",\n      \"policyname\": \"agency_commission_profiles_update_policy\"\n    },\n    {\n      \"tablename\": \"agency_commission_profiles\",\n      \"policyname\": \"project_admin_policy\"\n    }\n  ],\n  \"rowCount\": 5,\n  \"fields\": [\n    {\n      \"name\": \"tablename\",\n      \"dataTypeID\": 19\n    },\n    {\n      \"name\": \"policyname\",\n      \"dataTypeID\": 19\n    }\n  ]\n}"
+          }
+        ]
+      }
+    },
+    {
+      "checkpoint": "CP3",
+      "step": "post-columns-check",
+      "timestamp_utc": "2026-03-03T20:20:18.522Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "SQL query executed completed successfully:\n{\n  \"rows\": [\n    {\n      \"column_name\": \"id\",\n      \"data_type\": \"uuid\",\n      \"udt_name\": \"uuid\"\n    },\n    {\n      \"column_name\": \"agency_id\",\n      \"data_type\": \"bigint\",\n      \"udt_name\": \"int8\"\n    },\n    {\n      \"column_name\": \"operation_type\",\n      \"data_type\": \"USER-DEFINED\",\n      \"udt_name\": \"commission_operation_type\"\n    },\n    {\n      \"column_name\": \"commission_model\",\n      \"data_type\": \"USER-DEFINED\",\n      \"udt_name\": \"commission_model\"\n    },\n    {\n      \"column_name\": \"commission_percent\",\n      \"data_type\": \"numeric\",\n      \"udt_name\": \"numeric\"\n    },\n    {\n      \"column_name\": \"commission_fixed_amount\",\n      \"data_type\": \"numeric\",\n      \"udt_name\": \"numeric\"\n    },\n    {\n      \"column_name\": \"currency\",\n      \"data_type\": \"text\",\n      \"udt_name\": \"text\"\n    },\n    {\n      \"column_name\": \"additional_fees\",\n      \"data_type\": \"text\",\n      \"udt_name\": \"text\"\n    },\n    {\n      \"column_name\": \"notes\",\n      \"data_type\": \"text\",\n      \"udt_name\": \"text\"\n    },\n    {\n      \"column_name\": \"verification_status\",\n      \"data_type\": \"USER-DEFINED\",\n      \"udt_name\": \"commission_verification_status\"\n    },\n    {\n      \"column_name\": \"evidence_url\",\n      \"data_type\": \"text\",\n      \"udt_name\": \"text\"\n    },\n    {\n      \"column_name\": \"is_public\",\n      \"data_type\": \"boolean\",\n      \"udt_name\": \"bool\"\n    },\n    {\n      \"column_name\": \"updated_by\",\n      \"data_type\": \"text\",\n      \"udt_name\": \"text\"\n    },\n    {\n      \"column_name\": \"created_at\",\n      \"data_type\": \"timestamp with time zone\",\n      \"udt_name\": \"timestamptz\"\n    },\n    {\n      \"column_name\": \"updated_at\",\n      \"data_type\": \"timestamp with time zone\",\n      \"udt_name\": \"timestamptz\"\n    }\n  ],\n  \"rowCount\": 15,\n  \"fields\": [\n    {\n      \"name\": \"column_name\",\n      \"dataTypeID\": 19\n    },\n    {\n      \"name\": \"data_type\",\n      \"dataTypeID\": 1043\n    },\n    {\n      \"name\": \"udt_name\",\n      \"dataTypeID\": 19\n    }\n  ]\n}"
+          }
+        ]
+      }
+    }
+  ],
+  "stderr": "Backend version: 1.5.8\nInsforge MCP server started\nAPI Key: Configured\nAPI Base URL: https://dpxpa3f5.us-east.insforge.app\nBackend Version: 1.5.8\nTools registered: 17\n",
+  "finishedAt": "2026-03-03T20:20:18.543Z"
+}

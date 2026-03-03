@@ -1,12 +1,13 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Plus, Home, TrendingUp, Eye } from 'lucide-react'
-import { Property } from '@/types/database.types'
+import Link from 'next/link'
+import { Plus, Home, Eye } from 'lucide-react'
 import { PropertiesTable } from '@/components/partners/PropertiesTable'
+import type { PropertyRow as OwnerDashboardProperty } from '@/components/partners/PropertiesTable'
 
 interface OwnerDashboardProps {
-    properties: any[]
+    properties: OwnerDashboardProperty[]
     onToggleFeatured: (id: number) => void
     onEdit: (id: number) => void
 }
@@ -49,7 +50,7 @@ export function OwnerDashboard({ properties, onToggleFeatured, onEdit }: OwnerDa
                     </div>
                 </div>
 
-                <a 
+                <Link
                     href="/partners/dashboard/new"
                     className="group glass-card p-6 rounded-xl border border-dashed border-border hover:border-gold/50 flex flex-col items-center justify-center text-center transition-colors cursor-pointer"
                 >
@@ -58,7 +59,7 @@ export function OwnerDashboard({ properties, onToggleFeatured, onEdit }: OwnerDa
                     </div>
                     <p className="font-medium text-foreground">Vender/Alquilar Propiedad</p>
                     <p className="text-xs text-muted-foreground mt-1">Publica gratis en 2 minutos</p>
-                </a>
+                </Link>
             </div>
 
             {/* Properties List */}

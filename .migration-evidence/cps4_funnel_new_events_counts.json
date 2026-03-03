@@ -1,0 +1,8 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "SQL query executed completed successfully:\n{\n  \"rows\": [\n    {\n      \"event_name\": \"compare_opened\",\n      \"total\": \"1\"\n    },\n    {\n      \"event_name\": \"compare_property_added\",\n      \"total\": \"1\"\n    },\n    {\n      \"event_name\": \"compare_property_removed\",\n      \"total\": \"1\"\n    },\n    {\n      \"event_name\": \"saved_search_created\",\n      \"total\": \"1\"\n    },\n    {\n      \"event_name\": \"whatsapp_alert_sent\",\n      \"total\": \"1\"\n    }\n  ],\n  \"rowCount\": 5,\n  \"fields\": [\n    {\n      \"name\": \"event_name\",\n      \"dataTypeID\": 25\n    },\n    {\n      \"name\": \"total\",\n      \"dataTypeID\": 20\n    }\n  ]\n}"
+    }
+  ]
+}

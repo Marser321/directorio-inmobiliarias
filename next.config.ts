@@ -10,13 +10,13 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: '*.supabase.co',
+        hostname: 'lh3.googleusercontent.com',
         pathname: '/**',
       },
       {
         protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
-        pathname: '/**',
+        hostname: '**.insforge.app',
+        pathname: '/api/storage/**',
       },
     ],
   },

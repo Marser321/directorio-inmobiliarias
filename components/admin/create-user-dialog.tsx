@@ -50,14 +50,15 @@ export function CreateUserDialog({ onUserCreated }: { onUserCreated?: () => void
             const result = await createUserAction(formData)
 
             if (result.success) {
-                toast.success('Usuario creado con éxito')
+                toast.success(result.message)
                 setOpen(false)
                 if (onUserCreated) onUserCreated()
             } else {
                 toast.error('Error: ' + result.message)
             }
-        } catch (error: any) {
-            toast.error('Error inesperado: ' + error.message)
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Error inesperado'
+            toast.error('Error inesperado: ' + message)
         } finally {
             setLoading(false)
         }
@@ -74,7 +75,7 @@ export function CreateUserDialog({ onUserCreated }: { onUserCreated?: () => void
                 <DialogHeader>
                     <DialogTitle>Crear Nuevo Usuario</DialogTitle>
                     <DialogDescription>
-                        Registra un usuario manualmente. Se confirmará el email automáticamente.
+                        Registra un usuario manualmente. Si corresponde, deberá validar su email con código.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="grid gap-4 py-4">
@@ -88,7 +89,7 @@ export function CreateUserDialog({ onUserCreated }: { onUserCreated?: () => void
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="password" className="text-right">Contraseña</Label>
-                        <Input id="password" name="password" type="password" className="col-span-3" required minLength={6} />
+                        <Input id="password" name="password" type="password" className="col-span-3" required minLength={8} />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="role" className="text-right">Rol</Label>

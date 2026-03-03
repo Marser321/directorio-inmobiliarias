@@ -1,0 +1,56 @@
+
+> realpde@0.1.0 dev
+> next dev --webpack
+
+▲ Next.js 16.1.6 (webpack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.4:3000
+- Environments: .env.local
+
+✓ Starting...
+✓ Ready in 1044ms
+ GET /api/health/config 200 in 462ms (compile: 446ms, render: 15ms)
+ GET / 200 in 2.6s (compile: 1394ms, proxy.ts: 33ms, render: 1189ms)
+ GET /search 200 in 1399ms (compile: 956ms, proxy.ts: 5ms, render: 439ms)
+ GET /explore 200 in 799ms (compile: 416ms, proxy.ts: 6ms, render: 378ms)
+ GET /partners 200 in 648ms (compile: 321ms, proxy.ts: 3ms, render: 325ms)
+ GET /partners/login 200 in 663ms (compile: 340ms, proxy.ts: 3ms, render: 320ms)
+ GET /partners/registro 200 in 972ms (compile: 638ms, proxy.ts: 3ms, render: 331ms)
+ GET /demo-antigravity 200 in 771ms (compile: 405ms, proxy.ts: 3ms, render: 363ms)
+ GET /lifestyle/beachfront 307 in 1302ms (compile: 829ms, proxy.ts: 1965µs, render: 471ms)
+ GET /lifestyle/golf 307 in 846ms (compile: 4ms, proxy.ts: 1924µs, render: 840ms)
+ GET /lifestyle/urban 307 in 1014ms (compile: 3ms, proxy.ts: 4ms, render: 1008ms)
+ GET /lifestyle/farm 307 in 977ms (compile: 1955µs, proxy.ts: 1953µs, render: 974ms)
+ GET /property/12 200 in 3.4s (compile: 2.9s, proxy.ts: 3ms, render: 441ms)
+ GET /property/1 200 in 406ms (compile: 3ms, proxy.ts: 3ms, render: 400ms)
+ GET /property/3 200 in 194ms (compile: 4ms, proxy.ts: 3ms, render: 188ms)
+ GET /property/6 200 in 398ms (compile: 2ms, proxy.ts: 1794µs, render: 394ms)
+ GET /property/2 200 in 196ms (compile: 5ms, proxy.ts: 3ms, render: 188ms)
+ GET /property/8 200 in 188ms (compile: 2ms, proxy.ts: 1914µs, render: 184ms)
+ GET /privacidad 200 in 1560ms (compile: 1195ms, proxy.ts: 2ms, render: 363ms)
+ GET /terminos 200 in 872ms (compile: 554ms, proxy.ts: 2ms, render: 316ms)
+ GET / 200 in 332ms (compile: 13ms, proxy.ts: 1741µs, render: 317ms)
+ GET /search 200 in 225ms (compile: 12ms, proxy.ts: 2ms, render: 210ms)
+ GET /partners 200 in 205ms (compile: 10ms, proxy.ts: 1791µs, render: 193ms)
+ GET /partners/registro 200 in 206ms (compile: 12ms, proxy.ts: 2ms, render: 192ms)
+ GET /lifestyle/urban 307 in 184ms (compile: 2ms, proxy.ts: 2ms, render: 179ms)
+ GET /lifestyle/farm 307 in 189ms (compile: 1927µs, proxy.ts: 2ms, render: 184ms)
+ GET /lifestyle/golf 307 in 974ms (compile: 2ms, proxy.ts: 4ms, render: 967ms)
+ GET /lifestyle/beachfront 307 in 1020ms (compile: 12ms, proxy.ts: 1830µs, render: 1006ms)
+ GET /property/12 200 in 955ms (compile: 10ms, proxy.ts: 2ms, render: 943ms)
+ GET /property/1 200 in 679ms (compile: 1930µs, proxy.ts: 1980µs, render: 675ms)
+ GET /property/3 200 in 207ms (compile: 3ms, proxy.ts: 3ms, render: 201ms)
+ GET /property/6 200 in 211ms (compile: 2ms, proxy.ts: 1820µs, render: 207ms)
+ GET /property/2 200 in 410ms (compile: 3ms, proxy.ts: 2ms, render: 405ms)
+ GET /privacidad 200 in 253ms (compile: 15ms, proxy.ts: 1936µs, render: 237ms)
+ GET /property/8 200 in 444ms (compile: 1981µs, proxy.ts: 3ms, render: 440ms)
+ GET /terminos 200 in 220ms (compile: 1041µs, proxy.ts: 1937µs, render: 217ms)
+ GET /api/auth/me 200 in 754ms (compile: 747ms, render: 7ms)
+ GET /api/marketing/tiers 200 in 937ms (compile: 507ms, render: 429ms)
+ GET /api/marketing/requests 401 in 531ms (compile: 526ms, render: 5ms)
+ POST /api/partners/onboarding 401 in 516ms (compile: 510ms, render: 6ms)
+ POST /api/partners/properties 401 in 605ms (compile: 600ms, render: 5ms)
+ POST /api/stripe/checkout/featured 401 in 619ms (compile: 614ms, render: 5ms)
+ POST /api/stripe/checkout/subscription 401 in 572ms (compile: 567ms, render: 5ms)
+ POST /api/stripe/checkout/service-request 401 in 575ms (compile: 571ms, render: 5ms)
+[?25h

@@ -5,15 +5,40 @@ import { Command } from "cmdk"
 import { Search, Home, MapPin, Loader2, ArrowRight } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useRouter } from "next/navigation"
-import { cn } from "@/lib/utils"
 
-// Type for our search results
+type SearchResultRow = {
+    id: number
+    title: string
+    location_name?: string | null
+    location_slug?: string | null
+    price: number
+    currency?: string | null
+}
+
 type PropertyResult = {
-    id: string
+    id: number
     title: string
     location: string
-    price: string
-    image: string
+    priceLabel: string
+}
+
+function formatPrice(price: number, currency: string | null | undefined) {
+    const safeCurrency = typeof currency === 'string' && currency.trim().length > 0 ? currency : 'USD'
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: safeCurrency,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    }).format(Number(price || 0))
+}
+
+function normalizeSearchResult(row: SearchResultRow): PropertyResult {
+    return {
+        id: row.id,
+        title: row.title,
+        location: row.location_name || row.location_slug || 'Ubicación no especificada',
+        priceLabel: formatPrice(row.price, row.currency),
+    }
 }
 
 export function SearchDialog() {
@@ -22,48 +47,77 @@ export function SearchDialog() {
     const [loading, setLoading] = React.useState(false)
     const [results, setResults] = React.useState<PropertyResult[]>([])
     const router = useRouter()
+    const abortRef = React.useRef<AbortController | null>(null)
+    const requestIdRef = React.useRef(0)
 
-    // Handle Cmd+K
     React.useEffect(() => {
         const down = (e: KeyboardEvent) => {
             if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
                 e.preventDefault()
-                setOpen((open) => !open)
+                setOpen((current) => !current)
             }
         }
         document.addEventListener("keydown", down)
         return () => document.removeEventListener("keydown", down)
     }, [])
 
-    // Mock search function (replace with Server Action later)
-    const handleSearch = async (value: string) => {
+    const handleSearch = React.useCallback(async (value: string) => {
         setQuery(value)
-        if (value.length > 2) {
-            setLoading(true)
-            // Simulate API call
-            setTimeout(() => {
-                setResults([
-                    {
-                        id: "1",
-                        title: "Penthouse con Vista al Mar",
-                        location: "Punta del Este, La Barra",
-                        price: "$1,200,000",
-                        image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80"
-                    },
-                    {
-                        id: "2",
-                        title: "Casa de Campo Moderna",
-                        location: "José Ignacio",
-                        price: "$3,500,000",
-                        image: "https://images.unsplash.com/photo-1600596542815-2495db98dada?auto=format&fit=crop&q=80"
-                    }
-                ].filter(item => item.title.toLowerCase().includes(value.toLowerCase()) || item.location.toLowerCase().includes(value.toLowerCase())))
-                setLoading(false)
-            }, 500)
-        } else {
+        const trimmed = value.trim()
+        if (trimmed.length < 3) {
+            abortRef.current?.abort()
+            setLoading(false)
             setResults([])
+            return
         }
-    }
+
+        const requestId = requestIdRef.current + 1
+        requestIdRef.current = requestId
+
+        abortRef.current?.abort()
+        const controller = new AbortController()
+        abortRef.current = controller
+
+        setLoading(true)
+
+        try {
+            const params = new URLSearchParams({
+                q: trimmed,
+                limit: '8',
+                sort: 'relevance',
+            })
+
+            const response = await fetch(`/api/search/properties?${params.toString()}`, {
+                cache: 'no-store',
+                signal: controller.signal,
+            })
+
+            const payload = await response.json().catch(() => ({}))
+            if (!response.ok) {
+                throw new Error(payload?.error || 'No se pudo ejecutar la búsqueda')
+            }
+
+            if (requestId !== requestIdRef.current) return
+
+            const rows = Array.isArray(payload?.data) ? (payload.data as SearchResultRow[]) : []
+            setResults(rows.map(normalizeSearchResult))
+        } catch (error) {
+            if (error instanceof DOMException && error.name === 'AbortError') return
+            if (requestId === requestIdRef.current) {
+                setResults([])
+            }
+        } finally {
+            if (requestId === requestIdRef.current) {
+                setLoading(false)
+            }
+        }
+    }, [])
+
+    React.useEffect(() => {
+        return () => {
+            abortRef.current?.abort()
+        }
+    }, [])
 
     return (
         <AnimatePresence>
@@ -89,7 +143,9 @@ export function SearchDialog() {
                                 <Search className="mr-2 h-5 w-5 text-white/50" />
                                 <Command.Input
                                     value={query}
-                                    onValueChange={handleSearch}
+                                    onValueChange={(nextValue) => {
+                                        void handleSearch(nextValue)
+                                    }}
                                     placeholder="Busca 'apartamento con vista al mar'..."
                                     className="flex h-14 w-full bg-transparent py-3 text-lg text-white outline-none placeholder:text-white/40 disabled:cursor-not-allowed disabled:opacity-50"
                                     autoFocus
@@ -102,7 +158,7 @@ export function SearchDialog() {
                             </div>
 
                             <Command.List className="max-h-[60vh] overflow-y-auto p-2 scrollbar-hide">
-                                {!loading && results.length === 0 && query.length > 2 && (
+                                {!loading && results.length === 0 && query.trim().length >= 3 && (
                                     <div className="py-14 text-center text-sm text-white/60">
                                         <p>No encontramos propiedades exactas.</p>
                                         <p className="mt-1 text-xs text-white/40">Prueba con &quot;Casa en José Ignacio&quot;</p>
@@ -139,7 +195,7 @@ export function SearchDialog() {
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-4">
-                                                    <span className="font-semibold text-brand-gold">{item.price}</span>
+                                                    <span className="font-semibold text-brand-gold">{item.priceLabel}</span>
                                                     <ArrowRight className="h-4 w-4 opacity-0 transition-all group-data-[selected=true]:opacity-100 group-data-[selected=true]:translate-x-1" />
                                                 </div>
                                             </Command.Item>
@@ -154,7 +210,9 @@ export function SearchDialog() {
                                             {["Penthouse en La Barra", "Casa de Campo", "Frente al Mar", "Oportunidades de Inversión"].map((term) => (
                                                 <button
                                                     key={term}
-                                                    onClick={() => handleSearch(term)}
+                                                    onClick={() => {
+                                                        void handleSearch(term)
+                                                    }}
                                                     className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-left text-sm text-white/70 transition-colors hover:bg-white/10 hover:text-white"
                                                 >
                                                     {term}
@@ -163,7 +221,6 @@ export function SearchDialog() {
                                         </div>
                                     </div>
                                 )}
-
                             </Command.List>
                         </Command>
                     </motion.div>

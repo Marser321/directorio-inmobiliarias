@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, ChevronLeft, ChevronRight, Expand, Grid3X3 } from 'lucide-react'
 import Image from 'next/image'
@@ -54,6 +54,12 @@ export function AirbnbGallery({ images, title }: AirbnbGalleryProps) {
         if (e.key === 'ArrowLeft') goToPrev()
     }, [closeLightbox, goToNext, goToPrev])
 
+    useEffect(() => {
+        return () => {
+            document.body.style.overflow = 'unset'
+        }
+    }, [])
+
     if (!images.length) return null
 
     // Handle any number of images gracefully
@@ -67,7 +73,7 @@ export function AirbnbGallery({ images, title }: AirbnbGalleryProps) {
     return (
         <>
             {/* 1+4 Grid Gallery */}
-            <div className="relative grid grid-cols-4 grid-rows-2 gap-2 h-[400px] md:h-[500px] rounded-2xl overflow-hidden group cursor-pointer">
+            <div className="group relative grid h-[400px] cursor-pointer grid-cols-4 grid-rows-2 gap-2 overflow-hidden rounded-2xl border border-border/70 bg-surface-1/70 p-2 shadow-sm md:h-[500px]">
                 {/* Main Hero Image (Takes 2 columns, 2 rows) */}
                 <motion.div
                     className="col-span-2 row-span-2 relative overflow-hidden"
@@ -82,8 +88,9 @@ export function AirbnbGallery({ images, title }: AirbnbGalleryProps) {
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
                         sizes="(max-width: 768px) 100vw, 50vw"
                         priority
+                        unoptimized
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                 </motion.div>
 
                 {/* 4 Smaller Images */}
@@ -101,12 +108,13 @@ export function AirbnbGallery({ images, title }: AirbnbGalleryProps) {
                             fill
                             className="object-cover transition-transform duration-300 hover:scale-110"
                             sizes="(max-width: 768px) 50vw, 25vw"
+                            unoptimized
                         />
 
                         {/* "Ver todas las fotos" button on last image */}
                         {index === 3 && images.length > 5 && (
-                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                <span className="flex items-center gap-2 text-white font-medium bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg">
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                                <span className="flex items-center gap-2 rounded-lg bg-white/20 px-4 py-2 font-medium text-white backdrop-blur-sm">
                                     <Grid3X3 className="w-5 h-5" />
                                     Ver {images.length} fotos
                                 </span>
@@ -117,7 +125,7 @@ export function AirbnbGallery({ images, title }: AirbnbGalleryProps) {
 
                 {/* Expand Button (Bottom Right) */}
                 <motion.button
-                    className="absolute bottom-4 right-4 flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg font-medium shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute bottom-4 right-4 flex items-center gap-2 rounded-lg border border-border/60 bg-surface-0/90 px-4 py-2 font-medium text-ink-strong opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => openLightbox(0)}
@@ -134,7 +142,7 @@ export function AirbnbGallery({ images, title }: AirbnbGalleryProps) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] bg-black flex flex-col"
+                        className="fixed inset-0 z-[100] flex flex-col bg-black/95"
                         onKeyDown={handleKeyDown}
                         tabIndex={0}
                     >
@@ -146,7 +154,7 @@ export function AirbnbGallery({ images, title }: AirbnbGalleryProps) {
                             <h3 className="font-serif text-lg hidden md:block">{title}</h3>
                             <motion.button
                                 onClick={closeLightbox}
-                                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                                className="rounded-full p-2 transition-colors hover:bg-white/10"
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
                             >
@@ -172,6 +180,7 @@ export function AirbnbGallery({ images, title }: AirbnbGalleryProps) {
                                         className="object-contain"
                                         sizes="100vw"
                                         priority
+                                        unoptimized
                                     />
                                 </motion.div>
                             </AnimatePresence>
@@ -179,7 +188,7 @@ export function AirbnbGallery({ images, title }: AirbnbGalleryProps) {
                             {/* Navigation Arrows */}
                             <motion.button
                                 onClick={goToPrev}
-                                className="absolute left-4 md:left-8 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+                                className="absolute left-4 rounded-full border border-white/20 bg-white/10 p-3 text-white transition-colors hover:bg-white/20 md:left-8"
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
                             >
@@ -187,7 +196,7 @@ export function AirbnbGallery({ images, title }: AirbnbGalleryProps) {
                             </motion.button>
                             <motion.button
                                 onClick={goToNext}
-                                className="absolute right-4 md:right-8 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+                                className="absolute right-4 rounded-full border border-white/20 bg-white/10 p-3 text-white transition-colors hover:bg-white/20 md:right-8"
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
                             >
@@ -202,8 +211,8 @@ export function AirbnbGallery({ images, title }: AirbnbGalleryProps) {
                                     <motion.button
                                         key={index}
                                         onClick={() => setCurrentIndex(index)}
-                                        className={`relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all ${currentIndex === index
-                                            ? 'border-gold scale-110'
+                                        className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all ${currentIndex === index
+                                            ? 'scale-110 border-accent-gold-soft'
                                             : 'border-transparent opacity-60 hover:opacity-100'
                                             }`}
                                         whileHover={{ scale: 1.05 }}
@@ -214,6 +223,7 @@ export function AirbnbGallery({ images, title }: AirbnbGalleryProps) {
                                             fill
                                             className="object-cover"
                                             sizes="64px"
+                                            unoptimized
                                         />
                                     </motion.button>
                                 ))}

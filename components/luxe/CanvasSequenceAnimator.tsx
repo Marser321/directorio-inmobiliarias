@@ -38,7 +38,6 @@ export function CanvasSequenceAnimator({
     // Preload all images with progress tracking
     useEffect(() => {
         let isMounted = true;
-        const loadedImages: HTMLImageElement[] = [];
         let loadedCount = 0;
 
         console.log(`Starting to load ${frameCount} images for sequence: ${frameUrlPattern}`);

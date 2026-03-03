@@ -1,10 +1,10 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/insforge/compat-supabase'
 import type { PropertyFilters } from '@/hooks/usePropertyFilters'
 
 // Initialize Supabase client
 const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_INSFORGE_BASE_URL!,
+    process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY!
 )
 
 export interface PropertyResult {

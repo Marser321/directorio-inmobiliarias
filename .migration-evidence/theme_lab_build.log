@@ -1,0 +1,99 @@
+
+> realpde@0.1.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 4.5s
+  Running TypeScript ...
+  Collecting page data using 7 workers ...
+⚠ Using edge runtime on a page currently disables static generation for that page
+  Generating static pages using 7 workers (0/61) ...
+  Generating static pages using 7 workers (15/61) 
+  Generating static pages using 7 workers (30/61) 
+  Generating static pages using 7 workers (45/61) 
+✓ Generating static pages using 7 workers (61/61) in 201.2ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /[city]/[...slug]
+├ ƒ /admin
+├ ƒ /admin/agencies
+├ ƒ /admin/agencies/[id]/edit
+├ ƒ /admin/agencies/create
+├ ƒ /admin/logs
+├ ƒ /admin/properties
+├ ƒ /admin/properties/[id]/edit
+├ ƒ /admin/properties/create
+├ ƒ /admin/scraper
+├ ƒ /admin/settings
+├ ƒ /admin/users
+├ ƒ /agencies/[slug]
+├ ƒ /api/ai/generate-description
+├ ƒ /api/alerts/run
+├ ƒ /api/alerts/saved-search
+├ ƒ /api/auth/me
+├ ƒ /api/auth/register
+├ ƒ /api/auth/signin
+├ ƒ /api/auth/signout
+├ ƒ /api/auth/signup
+├ ƒ /api/auth/verify-otp
+├ ƒ /api/compare
+├ ƒ /api/debug/users
+├ ƒ /api/events/funnel
+├ ƒ /api/health/config
+├ ƒ /api/insights/zones
+├ ƒ /api/leads
+├ ƒ /api/manager/funnel/summary
+├ ƒ /api/marketing/requests
+├ ƒ /api/marketing/tiers
+├ ƒ /api/og
+├ ƒ /api/partners/create-agency
+├ ƒ /api/partners/onboarding
+├ ƒ /api/partners/properties
+├ ƒ /api/partners/properties/[id]
+├ ƒ /api/partners/properties/[id]/media/order
+├ ƒ /api/scraper/jobs
+├ ƒ /api/search/properties
+├ ƒ /api/stripe/checkout
+├ ƒ /api/stripe/checkout/featured
+├ ƒ /api/stripe/checkout/service-request
+├ ƒ /api/stripe/checkout/subscription
+├ ƒ /api/stripe/webhook
+├ ƒ /api/user/favorites
+├ ƒ /api/user/favorites/[propertyId]
+├ ƒ /api/user/favorites/sync
+├ ƒ /api/webhooks/ingest-properties
+├ ƒ /compare
+├ ƒ /demo-antigravity
+├ ƒ /demo-generator
+├ ƒ /demo-mansion
+├ ƒ /explore
+├ ƒ /partners
+├ ƒ /partners/dashboard
+├ ƒ /partners/dashboard/edit/[id]
+├ ƒ /partners/dashboard/manager
+├ ƒ /partners/dashboard/marketing
+├ ƒ /partners/dashboard/new
+├ ƒ /partners/dashboard/sniper
+├ ƒ /partners/debug
+├ ƒ /partners/login
+├ ƒ /partners/registro
+├ ƒ /privacidad
+├ ƒ /property/[id]
+├ ○ /robots.txt
+├ ƒ /search
+├ ○ /sitemap.xml
+├ ƒ /terminos
+└ ƒ /test-3d-card
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

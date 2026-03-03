@@ -47,6 +47,7 @@ export type LocationData = z.infer<typeof locationSchema>
 // ============================================
 // STEP 3: Details
 // ============================================
+
 export const detailsSchema = z.object({
     bedrooms: z
         .number({ message: 'Ingresa un número' })
@@ -55,7 +56,6 @@ export const detailsSchema = z.object({
         .max(50, 'Máximo 50 habitaciones'),
     bathrooms: z
         .number({ message: 'Ingresa un número' })
-        .int('Debe ser un número entero')
         .min(0, 'No puede ser negativo')
         .max(30, 'Máximo 30 baños'),
     garage_spaces: z
@@ -65,12 +65,10 @@ export const detailsSchema = z.object({
         .max(20, 'Máximo 20 espacios'),
     built_area: z
         .number({ message: 'Ingresa un número' })
-        .positive('Debe ser mayor a 0')
+        .min(1, 'Debe ser mayor a 0')
         .max(100000, 'Área demasiado grande'),
-    plot_area: z
-        .number({ message: 'Ingresa un número' })
+    plot_area: z.number({ message: 'Ingresa un número' })
         .min(0, 'No puede ser negativo')
-        .max(1000000, 'Área demasiado grande')
         .optional(),
     description: z
         .string()
@@ -91,6 +89,7 @@ export const mediaSchema = z.object({
         .max(20, 'Máximo 20 imágenes'),
     main_image_index: z.number().min(0),
     video_url: z.string().url('URL inválida').optional().or(z.literal('')),
+    tour_360_url: z.string().url('URL inválida').optional().or(z.literal('')),
 })
 
 export type MediaData = z.infer<typeof mediaSchema>

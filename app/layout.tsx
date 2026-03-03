@@ -4,8 +4,10 @@ import 'leaflet/dist/leaflet.css';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { SearchDialog } from '@/components/search/SearchDialog';
+import { CompareTray } from '@/components/search/CompareTray';
 import { SmoothScroll } from '@/components/luxe/SmoothScroll';
 import { Toaster } from '@/components/ui/sonner';
+import { AuthProvider } from '@/contexts/auth-context';
 
 const fontSans = Inter({
   subsets: ['latin'],
@@ -20,6 +22,7 @@ const fontSerif = Playfair_Display({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://realstate-nu.vercel.app'),
   title: {
     default: 'Luxe Estate | Punta del Este Luxury Real Estate',
     template: '%s | Luxe Estate'
@@ -63,19 +66,25 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const isThemeLabEditorial = process.env.FEATURE_THEME_LAB_EDITORIAL === 'true'
+
   return (
     <html lang="es" suppressHydrationWarning>
       <body
         className={cn(
-          'min-h-screen bg-background font-sans antialiased selection:bg-[#D4AF37] selection:text-white',
+          'min-h-screen bg-background font-sans antialiased selection:bg-primary selection:text-primary-foreground',
+          isThemeLabEditorial && 'theme-lab-editorial',
           fontSans.variable,
           fontSerif.variable
         )}
       >
-        <SmoothScroll />
-        <SearchDialog />
-        <Toaster />
-        {children}
+        <AuthProvider>
+          <SmoothScroll />
+          <SearchDialog />
+          <CompareTray />
+          <Toaster />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

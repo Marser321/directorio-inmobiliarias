@@ -1,4 +1,4 @@
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient } from '@/lib/insforge/compat-ssr'
 import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { ReactNode } from 'react'
@@ -7,8 +7,8 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     const cookieStore = await cookies()
 
     const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        process.env.NEXT_PUBLIC_INSFORGE_BASE_URL!,
+        process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY!,
         {
             cookies: {
                 getAll() {
@@ -38,9 +38,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     // Double check admin status
     const { data: profile } = await supabase
         .from('profiles')
-        .select('is_admin')
+        .select('is_admin, full_name')
         .eq('id', user.id)
-        .single()
+        .single<{ is_admin: boolean; full_name?: string | null }>()
 
     if (!profile?.is_admin) {
         return <div>Access Denied: Super Admin Only</div>
@@ -79,7 +79,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
                 <div className="p-4 border-t border-slate-800">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500 font-bold">
-                            {(profile as any).full_name?.[0] || 'A'}
+                            {profile?.full_name?.[0] || 'A'}
                         </div>
                         <div className="overflow-hidden">
                             <p className="text-sm font-medium truncate">Admin</p>

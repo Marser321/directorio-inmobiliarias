@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { Metadata } from 'next';
 import ExplorePanel from '@/components/explore/ExplorePanel';
 import VibeToggles from '@/components/explore/VibeToggles';
 

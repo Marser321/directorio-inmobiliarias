@@ -1,0 +1,6 @@
+
+> realpde@0.1.0 check:env:strict
+> node scripts/check-env.mjs --require-public --require-server
+
+[dotenv@17.2.4] injecting env (24) from .env.local -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+[check-env] OK (default)

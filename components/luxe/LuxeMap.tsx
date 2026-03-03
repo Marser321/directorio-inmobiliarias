@@ -46,8 +46,8 @@ interface Property {
     title: string;
     price: number;
     currency: string | null;
-    lat?: number;
-    lng?: number;
+    lat?: number | null;
+    lng?: number | null;
     location?: string;
     main_image?: string;
 }
@@ -59,12 +59,21 @@ interface LuxeMapProps {
     onMarkerClick?: (id: string | number) => void;
 }
 
+function hasCoordinates(property: Property): property is Property & { lat: number; lng: number } {
+    return (
+        typeof property.lat === 'number' &&
+        Number.isFinite(property.lat) &&
+        typeof property.lng === 'number' &&
+        Number.isFinite(property.lng)
+    );
+}
+
 // Component to handle map fly-to animation
 function FlyToMarker({ lat, lng, shouldFly }: { lat: number; lng: number; shouldFly: boolean }) {
     const map = useMap();
 
     useEffect(() => {
-        if (shouldFly && lat && lng) {
+        if (shouldFly && Number.isFinite(lat) && Number.isFinite(lng)) {
             map.flyTo([lat, lng], 13, { duration: 0.8 });
         }
     }, [lat, lng, shouldFly, map]);
@@ -79,29 +88,15 @@ export default function LuxeMap({
     onMarkerClick
 }: LuxeMapProps) {
 
+    const propertiesWithCoords = useMemo(() => {
+        return properties.filter(hasCoordinates);
+    }, [properties]);
+
     // Find the hovered property for fly-to
     const hoveredProperty = useMemo(() =>
-        properties.find(p => p.id === hoveredPropertyId),
-        [properties, hoveredPropertyId]
+        propertiesWithCoords.find((property) => property.id === hoveredPropertyId) || null,
+        [propertiesWithCoords, hoveredPropertyId]
     );
-
-    // Assign mock coordinates if not present
-    const propertiesWithCoords = useMemo(() => {
-        const mockCoords = [
-            { lat: -34.915, lng: -54.86 },
-            { lat: -34.85, lng: -54.70 },
-            { lat: -34.94, lng: -54.91 },
-            { lat: -34.88, lng: -54.75 },
-            { lat: -34.92, lng: -54.82 },
-            { lat: -34.90, lng: -54.88 },
-        ];
-
-        return properties.map((p, i) => ({
-            ...p,
-            lat: p.lat || mockCoords[i % mockCoords.length].lat,
-            lng: p.lng || mockCoords[i % mockCoords.length].lng,
-        }));
-    }, [properties]);
 
     const formatPrice = (price: number, currency: string | null) => {
         if (price >= 1000000) {
@@ -129,69 +124,78 @@ export default function LuxeMap({
         .leaflet-popup-content {
           margin: 12px 16px;
         }
-      `}</style>
+	      `}</style>
 
-            <MapContainer
-                center={[CENTER_LAT, CENTER_LNG]}
-                zoom={11}
-                scrollWheelZoom={true}
-                className="w-full h-full z-0 rounded-xl"
-                style={{ background: '#FAFAFA' }}
-            >
-                {/* Premium Light Tiles */}
-                <TileLayer
-                    attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-                    url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-                />
-
-                {/* Fly to hovered property */}
-                {hoveredProperty && (
-                    <FlyToMarker
-                        lat={hoveredProperty.lat || CENTER_LAT}
-                        lng={hoveredProperty.lng || CENTER_LNG}
-                        shouldFly={!!hoveredPropertyId}
+            <div className="relative w-full h-full">
+                <MapContainer
+                    center={[CENTER_LAT, CENTER_LNG]}
+                    zoom={11}
+                    scrollWheelZoom={false}
+                    className="w-full h-full z-0 rounded-xl"
+                    style={{ background: '#FAFAFA' }}
+                >
+                    {/* Premium Light Tiles */}
+                    <TileLayer
+                        attribution='&copy; <a href="https://carto.com/">CARTO</a>'
+                        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
                     />
-                )}
 
-                {/* Property Markers */}
-                {propertiesWithCoords.map((property) => {
-                    const isHighlighted = property.id === hoveredPropertyId;
+                    {/* Fly to hovered property */}
+                    {hoveredProperty && (
+                        <FlyToMarker
+                            lat={hoveredProperty.lat}
+                            lng={hoveredProperty.lng}
+                            shouldFly={hoveredPropertyId !== null}
+                        />
+                    )}
 
-                    return (
-                        <Marker
-                            key={property.id}
-                            position={[property.lat!, property.lng!]}
-                            icon={isHighlighted ? HighlightedIcon : DefaultIcon}
-                            eventHandlers={{
-                                mouseover: () => onMarkerHover?.(property.id),
-                                mouseout: () => onMarkerHover?.(null),
-                                click: () => onMarkerClick?.(property.id),
-                            }}
-                        >
-                            <Popup>
-                                <div className="text-center min-w-[180px]">
-                                    {property.main_image && (
-                                        <img
-                                            src={property.main_image}
-                                            alt={property.title}
-                                            className="w-full h-24 object-cover rounded-lg mb-2"
-                                        />
-                                    )}
-                                    <strong className="block text-foreground font-serif text-lg">
-                                        {property.title}
-                                    </strong>
-                                    <span className="text-muted-foreground text-sm block mb-1">
-                                        {property.location || 'Punta del Este'}
-                                    </span>
-                                    <span className="text-[#D4AF37] font-bold text-lg">
-                                        {formatPrice(property.price, property.currency)}
-                                    </span>
-                                </div>
-                            </Popup>
-                        </Marker>
-                    );
-                })}
-            </MapContainer>
+                    {/* Property Markers */}
+                    {propertiesWithCoords.map((property) => {
+                        const isHighlighted = property.id === hoveredPropertyId;
+
+                        return (
+                            <Marker
+                                key={property.id}
+                                position={[property.lat, property.lng]}
+                                icon={isHighlighted ? HighlightedIcon : DefaultIcon}
+                                eventHandlers={{
+                                    mouseover: () => onMarkerHover?.(property.id),
+                                    mouseout: () => onMarkerHover?.(null),
+                                    click: () => onMarkerClick?.(property.id),
+                                }}
+                            >
+                                <Popup>
+                                    <div className="text-center min-w-[180px]">
+                                        {property.main_image && (
+                                            /* eslint-disable-next-line @next/next/no-img-element */
+                                            <img
+                                                src={property.main_image}
+                                                alt={property.title}
+                                                className="w-full h-24 object-cover rounded-lg mb-2"
+                                            />
+                                        )}
+                                        <strong className="block text-foreground font-serif text-lg">
+                                            {property.title}
+                                        </strong>
+                                        <span className="text-muted-foreground text-sm block mb-1">
+                                            {property.location || 'Punta del Este'}
+                                        </span>
+                                        <span className="text-[#D4AF37] font-bold text-lg">
+                                            {formatPrice(property.price, property.currency)}
+                                        </span>
+                                    </div>
+                                </Popup>
+                            </Marker>
+                        );
+                    })}
+                </MapContainer>
+
+                {propertiesWithCoords.length === 0 ? (
+                    <div className="pointer-events-none absolute inset-x-4 bottom-4 rounded-lg border border-slate-200 bg-white/95 px-4 py-3 text-xs text-slate-600 shadow-sm">
+                        Ubicación no disponible para esta propiedad.
+                    </div>
+                ) : null}
+            </div>
         </>
     );
 }

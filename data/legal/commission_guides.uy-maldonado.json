@@ -1,0 +1,43 @@
+{
+  "last_reviewed_at": "2026-03-03T00:00:00Z",
+  "owner": "legal-ops",
+  "scope": "Uruguay + Maldonado",
+  "guides": [
+    {
+      "id": "uy-ley-20380-operadores-inmobiliarios",
+      "title": "Registro Nacional de Operadores Inmobiliarios",
+      "scope": "Uruguay (nacional)",
+      "summary": "La actividad de operador inmobiliario requiere registro y cumplimiento de obligaciones formales. Sirve para validar seriedad operativa de la inmobiliaria.",
+      "source_name": "IMPO - Ley N° 20.380",
+      "source_url": "https://www.impo.com.uy/bases/leyes/20380-2024",
+      "effective_date": "2024-05-30"
+    },
+    {
+      "id": "uy-ley-17250-relaciones-consumo",
+      "title": "Derechos del consumidor en contratación de servicios",
+      "scope": "Uruguay (nacional)",
+      "summary": "Las relaciones de consumo con intermediación profesional se rigen por derechos de información, claridad contractual y trato justo al consumidor.",
+      "source_name": "IMPO - Ley N° 17.250",
+      "source_url": "https://www.impo.com.uy/bases/leyes/17250-2000",
+      "effective_date": "2000-08-17"
+    },
+    {
+      "id": "uy-mef-defensa-consumidor",
+      "title": "Canales oficiales de reclamo y orientación",
+      "scope": "Uruguay (nacional)",
+      "summary": "El Área de Defensa del Consumidor centraliza consultas y reclamos cuando interviene un proveedor profesional en la relación de consumo.",
+      "source_name": "Ministerio de Economía y Finanzas - Defensa del Consumidor",
+      "source_url": "https://www.gub.uy/ministerio-economia-finanzas/defensa-del-consumidor",
+      "effective_date": null
+    },
+    {
+      "id": "maldonado-tramites-inmobiliarios",
+      "title": "Contexto departamental de trámites y gestión territorial",
+      "scope": "Maldonado (departamental)",
+      "summary": "En Maldonado conviven obligaciones nacionales con trámites y gestión territorial departamental que impactan en documentación, padrones y operación local.",
+      "source_name": "Intendencia de Maldonado - Trámites",
+      "source_url": "https://www.maldonado.gub.uy/tramites-0",
+      "effective_date": null
+    }
+  ]
+}

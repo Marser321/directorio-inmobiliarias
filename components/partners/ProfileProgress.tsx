@@ -8,7 +8,7 @@ interface ProfileProgressProps {
         logo_url?: string | null
         name?: string
         slug?: string
-        [key: string]: any
+        [key: string]: unknown
     }
 }
 

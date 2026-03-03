@@ -1,12 +1,14 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Building2, User, Upload, Check, ArrowRight, ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
-import { toast } from 'sonner'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
+import { createClient as createSupabaseClient } from '@/utils/supabase/client'
+import { setClientAccessToken } from '@/lib/insforge/client-token'
 
 // Step indicator component
 function StepIndicator({ currentStep }: { currentStep: number }) {
@@ -49,7 +51,13 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
 // Logo uploader with drag & drop
 function LogoUploader({ value, onChange }: { value: File | null; onChange: (file: File | null) => void }) {
     const [isDragging, setIsDragging] = useState(false)
-    const [preview, setPreview] = useState<string | null>(null)
+    const preview = useMemo(() => (value ? URL.createObjectURL(value) : null), [value])
+
+    useEffect(() => {
+        return () => {
+            if (preview) URL.revokeObjectURL(preview)
+        }
+    }, [preview])
 
     const handleDrop = useCallback((e: React.DragEvent) => {
         e.preventDefault()
@@ -57,7 +65,6 @@ function LogoUploader({ value, onChange }: { value: File | null; onChange: (file
         const file = e.dataTransfer.files[0]
         if (file && file.type.startsWith('image/')) {
             onChange(file)
-            setPreview(URL.createObjectURL(file))
         }
     }, [onChange])
 
@@ -65,7 +72,6 @@ function LogoUploader({ value, onChange }: { value: File | null; onChange: (file
         const file = e.target.files?.[0]
         if (file) {
             onChange(file)
-            setPreview(URL.createObjectURL(file))
         }
     }
 
@@ -132,9 +138,13 @@ interface AdminData {
 
 export default function RegistroPage() {
     const router = useRouter()
-    const { user, loading: authLoading } = useAuth()
+    const { user, loading: authLoading, refresh } = useAuth()
     const [step, setStep] = useState(1)
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isVerifyingOtp, setIsVerifyingOtp] = useState(false)
+    const [otpCode, setOtpCode] = useState('')
+    const [pendingEmail, setPendingEmail] = useState('')
+    const [needsOtpVerification, setNeedsOtpVerification] = useState(false)
     const [agencyData, setAgencyData] = useState<AgencyData>({
         name: '',
         slug: '',
@@ -165,7 +175,7 @@ export default function RegistroPage() {
         if (step === 1 && agencyData.name && agencyData.city) {
             // If in complete profile mode, we submit directly from step 1
             if (isCompleteProfileMode) {
-                handleSubmit(new Event('submit') as any)
+                handleSubmit()
             } else {
                 setStep(2)
             }
@@ -176,8 +186,50 @@ export default function RegistroPage() {
         if (step > 1) setStep(step - 1)
     }
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
+    const uploadAgencyLogo = useCallback(async (): Promise<string | null> => {
+        if (!agencyData.logo) return null
+
+        const supabase = createSupabaseClient()
+        const ext = agencyData.logo.name.split('.').pop()?.toLowerCase() || 'png'
+        const safeExt = ext.replace(/[^a-z0-9]/g, '') || 'png'
+        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${safeExt}`
+        const filePath = `agencies/${fileName}`
+
+        const { error: uploadError } = await supabase.storage
+            .from('agency-logos')
+            .upload(filePath, agencyData.logo)
+
+        if (uploadError) {
+            throw new Error('No se pudo subir el logo')
+        }
+
+        const { data } = supabase.storage.from('agency-logos').getPublicUrl(filePath)
+        return data.publicUrl
+    }, [agencyData.logo])
+
+    const runOnboarding = useCallback(async (logoKey: string | null = null) => {
+        const onboardingResponse = await fetch('/api/partners/onboarding', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                agencyName: agencyData.name,
+                agencySlug: agencyData.slug,
+                city: agencyData.city,
+                description: agencyData.description,
+                logoKey,
+            }),
+        })
+
+        const onboardingData = await onboardingResponse.json()
+        if (!onboardingResponse.ok) {
+            throw new Error(onboardingData.error || 'No se pudo completar onboarding')
+        }
+
+        return onboardingData
+    }, [agencyData.city, agencyData.description, agencyData.name, agencyData.slug])
+
+    const handleSubmit = async (e?: React.FormEvent) => {
+        e?.preventDefault()
 
         if (!isCompleteProfileMode && adminData.password !== adminData.confirmPassword) {
             alert('Las contraseñas no coinciden')
@@ -187,38 +239,24 @@ export default function RegistroPage() {
         setIsSubmitting(true)
 
         try {
-            let response;
+            let response
 
             if (isCompleteProfileMode) {
                 // Mode: Create Agency for Existing User
-                // First upload logo if present (simulated or real)
-                let logoUrl = null;
-                // TODO: Implement actual logo upload to storage if needed
-
-                response = await fetch('/api/partners/create-agency', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        agencyName: agencyData.name,
-                        agencySlug: agencyData.slug,
-                        city: agencyData.city,
-                        description: agencyData.description,
-                        logoUrl: logoUrl
-                    }),
-                })
+                const logoKey = await uploadAgencyLogo()
+                await runOnboarding(logoKey)
+                await refresh()
+                window.location.href = '/partners/dashboard?created=true'
+                return
             } else {
                 // Mode: Full Registration (User + Agency)
-                response = await fetch('/api/auth/register', {
+                response = await fetch('/api/auth/signup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        agencyName: agencyData.name,
-                        agencySlug: agencyData.slug,
-                        city: agencyData.city,
-                        description: agencyData.description,
-                        adminEmail: adminData.email,
-                        adminPassword: adminData.password,
-                        adminName: adminData.fullName,
+                        email: adminData.email,
+                        password: adminData.password,
+                        name: adminData.fullName,
                     }),
                 })
             }
@@ -229,19 +267,43 @@ export default function RegistroPage() {
                 throw new Error(data.error || 'Error al procesar solicitud')
             }
 
-            // Success! 
-            if (isCompleteProfileMode) {
-                // If we were already logged in, go straight to dashboard
-                // Force a reload or re-fetch of agency data
+            setPendingEmail(adminData.email)
+            setNeedsOtpVerification(Boolean(data.requireEmailVerification ?? true))
+
+            if (!data.requireEmailVerification) {
+                if (data.accessToken) {
+                    setClientAccessToken(data.accessToken)
+                } else {
+                    const signInResponse = await fetch('/api/auth/signin', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: adminData.email,
+                            password: adminData.password,
+                        }),
+                    })
+
+                    if (!signInResponse.ok) {
+                        throw new Error('No se pudo iniciar sesión tras el registro')
+                    }
+
+                    const signInData = await signInResponse.json()
+                    if (signInData?.accessToken) {
+                        setClientAccessToken(signInData.accessToken)
+                    }
+                }
+
+                const logoKey = await uploadAgencyLogo()
+                await runOnboarding(logoKey)
+
+                await refresh()
                 window.location.href = '/partners/dashboard?created=true'
-            } else {
-                // If new registration, go to login
-                window.location.href = '/partners/login?registered=true'
             }
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Registration error:', error)
-            alert(error.message || 'Error al conectar con el servidor')
+            const message = error instanceof Error ? error.message : 'Error al conectar con el servidor'
+            alert(message)
         } finally {
             setIsSubmitting(false)
         }
@@ -251,6 +313,74 @@ export default function RegistroPage() {
         return (
             <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
                 <div className="w-8 h-8 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
+            </div>
+        )
+    }
+
+    if (needsOtpVerification && !isCompleteProfileMode) {
+        const handleVerifyOtp = async (e: React.FormEvent) => {
+            e.preventDefault()
+            setIsVerifyingOtp(true)
+
+            try {
+                const verifyResponse = await fetch('/api/auth/verify-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: pendingEmail,
+                        otp: otpCode,
+                    }),
+                })
+
+                const verifyData = await verifyResponse.json()
+                if (!verifyResponse.ok) {
+                    throw new Error(verifyData.error || 'OTP inválido')
+                }
+
+                setClientAccessToken(verifyData.accessToken)
+
+                const logoKey = await uploadAgencyLogo()
+                await runOnboarding(logoKey)
+
+                await refresh()
+                router.push('/partners/dashboard?created=true')
+            } catch (error: unknown) {
+                const message = error instanceof Error ? error.message : 'Error verificando OTP'
+                alert(message)
+            } finally {
+                setIsVerifyingOtp(false)
+            }
+        }
+
+        return (
+            <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
+                <div className="w-full max-w-md glass-card rounded-2xl p-8 shadow-2xl">
+                    <h2 className="text-2xl font-serif font-bold text-foreground mb-2">
+                        Verifica tu <span className="text-gold">correo</span>
+                    </h2>
+                    <p className="text-muted-foreground mb-6">
+                        Ingresa el código OTP enviado a {pendingEmail || adminData.email}.
+                    </p>
+
+                    <form className="space-y-4" onSubmit={handleVerifyOtp}>
+                        <input
+                            type="text"
+                            value={otpCode}
+                            onChange={(e) => setOtpCode(e.target.value)}
+                            placeholder="Código de 6 dígitos"
+                            className="w-full px-4 py-3 rounded-xl border border-border bg-background/50 focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all"
+                            required
+                        />
+
+                        <button
+                            type="submit"
+                            disabled={isVerifyingOtp || otpCode.length < 6}
+                            className="w-full btn-luxe py-3 px-6 rounded-xl text-white font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isVerifyingOtp ? 'Verificando...' : 'Verificar y continuar'}
+                        </button>
+                    </form>
+                </div>
             </div>
         )
     }
@@ -307,7 +437,7 @@ export default function RegistroPage() {
                                         />
                                         {agencyData.slug && (
                                             <p className="mt-1 text-xs text-muted-foreground">
-                                                URL: luxe-estate.com/agencia/<span className="text-gold">{agencyData.slug}</span>
+                                                URL: luxe-estate.com/agencies/<span className="text-gold">{agencyData.slug}</span>
                                             </p>
                                         )}
                                     </div>
@@ -475,9 +605,9 @@ export default function RegistroPage() {
                     {!isCompleteProfileMode && (
                         <p className="mt-6 text-center text-sm text-muted-foreground">
                             ¿Ya tienes cuenta?{' '}
-                            <a href="/partners/login" className="text-gold hover:underline">
+                            <Link href="/partners/login" className="text-gold hover:underline">
                                 Inicia sesión
-                            </a>
+                            </Link>
                         </p>
                     )}
                 </div>

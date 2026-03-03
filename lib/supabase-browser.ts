@@ -1,35 +1,39 @@
 'use client'
 
-import { createBrowserClient } from '@supabase/ssr'
-import { Database } from '@/types/database.types'
+import { createBrowserClient } from '@/lib/insforge/compat-ssr'
+import { getInsforgeClientEnvDiagnostics, type EnvDiagnostics } from '@/lib/insforge/compat-supabase'
 
-/**
- * Creates a Supabase client for use in browser/client components.
- * Uses cookie-based authentication for session persistence.
- */
-export function createSupabaseBrowserClient() {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-    console.log('Supabase Browser Client Init:', {
-        url,
-        keyLength: key?.length,
-        hasKey: !!key
-    })
-
-    if (!url || !key) {
-        console.error('Supabase Browser Client: Missing URL or Key!')
-    }
-
-    return createBrowserClient<Database>(url!, key!) as any
+function getPublicClientConfig() {
+  return {
+    url: process.env.NEXT_PUBLIC_INSFORGE_BASE_URL,
+    key: process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY,
+  }
 }
 
-// Singleton instance for use across the app
+export function getSupabaseBrowserEnvDiagnostics(): EnvDiagnostics {
+  const { url, key } = getPublicClientConfig()
+  return getInsforgeClientEnvDiagnostics(url, key)
+}
+
+export function createSupabaseBrowserClient() {
+  const { url, key } = getPublicClientConfig()
+  const diagnostics = getInsforgeClientEnvDiagnostics(url, key)
+
+  if (!diagnostics.ok) {
+    console.warn(
+      `[InsForge] Missing config (${diagnostics.mode}): ${diagnostics.missing.join(', ')}. ` +
+        'Check .env.local and restart the dev server.'
+    )
+  }
+
+  return createBrowserClient(url, key)
+}
+
 let browserClient: ReturnType<typeof createSupabaseBrowserClient> | null = null
 
 export function getSupabaseBrowserClient() {
-    if (!browserClient) {
-        browserClient = createSupabaseBrowserClient()
-    }
-    return browserClient
+  if (!browserClient) {
+    browserClient = createSupabaseBrowserClient()
+  }
+  return browserClient
 }

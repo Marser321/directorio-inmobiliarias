@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -34,7 +33,12 @@ function MapClickHandler({ onLocationSelect }: { onLocationSelect: (lat: number,
 export default function LocationPickerMap({ latitude, longitude, onLocationSelect }: LocationPickerMapProps) {
     // Default center: Punta del Este, Uruguay
     const defaultCenter: [number, number] = [-34.9667, -54.9500]
-    const center: [number, number] = latitude && longitude
+    const hasCoordinates =
+        typeof latitude === 'number' &&
+        Number.isFinite(latitude) &&
+        typeof longitude === 'number' &&
+        Number.isFinite(longitude)
+    const center: [number, number] = hasCoordinates
         ? [latitude, longitude]
         : defaultCenter
 
@@ -51,7 +55,7 @@ export default function LocationPickerMap({ latitude, longitude, onLocationSelec
                 url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
             />
             <MapClickHandler onLocationSelect={onLocationSelect} />
-            {latitude && longitude && (
+            {hasCoordinates && (
                 <Marker position={[latitude, longitude]} icon={customIcon} />
             )}
         </MapContainer>

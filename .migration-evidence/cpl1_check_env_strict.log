@@ -1,0 +1,6 @@
+
+> realpde@0.1.0 check:env:strict
+> node scripts/check-env.mjs --require-public --require-server
+
+[dotenv@17.2.4] injecting env (23) from .env.local -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+[check-env] OK (default)

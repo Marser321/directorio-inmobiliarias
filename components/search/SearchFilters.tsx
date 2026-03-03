@@ -1,19 +1,29 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Slider } from "@/components/ui/slider"
 import {
-    Filter, X, ChevronDown, ChevronUp,
-    Search, Home, Building, Castle, Warehouse,
-    Waves, TreePine, Car, Dumbbell, Shield
+    Filter,
+    X,
+    ChevronDown,
+    ChevronUp,
+    Search,
+    Home,
+    Building,
+    Castle,
+    Warehouse,
+    Waves,
+    TreePine,
+    Car,
+    Dumbbell,
+    Shield,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useSearchFilters, SearchFilters as SearchFiltersType } from "@/hooks/useSearchFilters"
+import { useSearchFilters } from "@/hooks/useSearchFilters"
 import { motion, AnimatePresence } from "framer-motion"
 
-// Property types with icons
 const PROPERTY_TYPES = [
     { id: "casa", label: "Casa", icon: Home },
     { id: "apartamento", label: "Apartamento", icon: Building },
@@ -21,7 +31,6 @@ const PROPERTY_TYPES = [
     { id: "terreno", label: "Terreno", icon: Warehouse },
 ]
 
-// Features with icons
 const FEATURES = [
     { id: "pool", label: "Piscina", icon: Waves },
     { id: "garden", label: "Jardín", icon: TreePine },
@@ -30,7 +39,6 @@ const FEATURES = [
     { id: "security", label: "Seguridad", icon: Shield },
 ]
 
-// Bedroom/Bathroom options
 const ROOM_OPTIONS = [
     { value: null, label: "Todos" },
     { value: 1, label: "1+" },
@@ -69,99 +77,66 @@ export function SearchFilters({ className, onClose, isSheet }: SearchFiltersProp
     })
 
     const toggleSection = (section: keyof typeof expandedSections) => {
-        setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }))
-    }
-
-    // Format price for display
-    const formatPrice = (value: number) => {
-        if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`
-        if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`
-        return `$${value}`
-    }
-
-    // Local price state for slider (to avoid constant URL updates)
-    const [localPriceRange, setLocalPriceRange] = useState<[number, number]>([
-        filters.priceMin || 0,
-        filters.priceMax || 10000000,
-    ])
-
-    // Sync local price range with filters (e.g., when resetting)
-    useEffect(() => {
-        setLocalPriceRange([
-            filters.priceMin || 0,
-            filters.priceMax || 10000000,
-        ])
-    }, [filters.priceMin, filters.priceMax])
-
-    const handlePriceCommit = () => {
-        setPriceRange(
-            localPriceRange[0] > 0 ? localPriceRange[0] : null,
-            localPriceRange[1] < 10000000 ? localPriceRange[1] : null
-        )
+        setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }))
     }
 
     return (
         <aside
             className={cn(
-                "bg-white border-r border-slate-100 flex flex-col",
-                isSheet ? "h-full" : "w-72 lg:w-80 h-full",
+                "relative flex flex-col border-r border-border/70 bg-surface-0/95",
+                isSheet ? "h-full" : "h-full w-72 lg:w-80",
                 className
             )}
         >
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-slate-100">
+            <div className="flex items-center justify-between border-b border-border/70 p-4">
                 <div className="flex items-center gap-2">
-                    <Filter className="w-4 h-4 text-slate-600" />
-                    <h2 className="font-semibold text-slate-900">Filtros</h2>
-                    {hasActiveFilters && (
-                        <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse" />
-                    )}
+                    <Filter className="h-4 w-4 text-ink-soft" />
+                    <h2 className="font-semibold text-ink-strong">Filtros</h2>
+                    {hasActiveFilters ? (
+                        <span className="h-2 w-2 animate-pulse rounded-full bg-accent-gold-soft" />
+                    ) : null}
                 </div>
                 <div className="flex items-center gap-2">
-                    {hasActiveFilters && (
+                    {hasActiveFilters ? (
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={resetFilters}
-                            className="text-xs text-slate-500 hover:text-slate-900"
+                            className="text-xs text-ink-soft hover:text-ink-strong"
                         >
                             Limpiar
                         </Button>
-                    )}
-                    {onClose && (
-                        <Button variant="ghost" size="icon" onClick={onClose}>
-                            <X className="w-4 h-4" />
+                    ) : null}
+                    {onClose ? (
+                        <Button variant="ghost" size="icon" onClick={onClose} aria-label="Cerrar filtros">
+                            <X className="h-4 w-4" />
                         </Button>
-                    )}
+                    ) : null}
                 </div>
             </div>
 
-            {/* Scrollable Filters */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin">
-
-                {/* Search Input */}
+            <div className="scrollbar-thin flex-1 space-y-6 overflow-y-auto p-4">
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-soft" />
                     <Input
                         type="text"
                         placeholder="Buscar por ubicación o título..."
                         value={filters.query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        className="pl-10 bg-slate-50 border-slate-200 focus:bg-white"
+                        onChange={(event) => setQuery(event.target.value)}
+                        className="border-border bg-surface-1/70 pl-10 focus:bg-card"
                     />
                 </div>
 
-                {/* Transaction Type */}
-                <div className="flex gap-2">
+                <div className="grid grid-cols-2 gap-2">
                     <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setStatus(filters.status === "for_sale" ? null : "for_sale")}
                         className={cn(
-                            "flex-1 rounded-full transition-all",
+                            "rounded-full transition-all",
                             filters.status === "for_sale"
-                                ? "bg-slate-900 text-white border-slate-900"
-                                : "border-slate-200"
+                                ? "border-ink-strong bg-ink-strong text-surface-0"
+                                : "border-border text-ink-soft"
                         )}
                     >
                         Venta
@@ -171,58 +146,29 @@ export function SearchFilters({ className, onClose, isSheet }: SearchFiltersProp
                         size="sm"
                         onClick={() => setStatus(filters.status === "for_rent" ? null : "for_rent")}
                         className={cn(
-                            "flex-1 rounded-full transition-all",
+                            "rounded-full transition-all",
                             filters.status === "for_rent"
-                                ? "bg-slate-900 text-white border-slate-900"
-                                : "border-slate-200"
+                                ? "border-ink-strong bg-ink-strong text-surface-0"
+                                : "border-border text-ink-soft"
                         )}
                     >
                         Alquiler
                     </Button>
                 </div>
 
-                {/* Price Range Section */}
                 <CollapsibleSection
                     title="Rango de Precio"
                     isExpanded={expandedSections.price}
                     onToggle={() => toggleSection("price")}
                 >
-                    <div className="space-y-4">
-                        <div className="flex justify-between text-sm">
-                            <span className="text-slate-600">{formatPrice(localPriceRange[0])}</span>
-                            <span className="text-slate-600">{formatPrice(localPriceRange[1])}</span>
-                        </div>
-                        <Slider
-                            value={localPriceRange}
-                            min={0}
-                            max={10000000}
-                            step={50000}
-                            onValueChange={(value) => setLocalPriceRange(value as [number, number])}
-                            onValueCommit={handlePriceCommit}
-                            className="[&_[role=slider]]:bg-[#D4AF37] [&_[role=slider]]:border-[#D4AF37]"
-                        />
-                        <div className="flex gap-2">
-                            <Input
-                                type="number"
-                                placeholder="Mín"
-                                value={localPriceRange[0] || ""}
-                                onChange={(e) => setLocalPriceRange([Number(e.target.value), localPriceRange[1]])}
-                                onBlur={handlePriceCommit}
-                                className="text-sm"
-                            />
-                            <Input
-                                type="number"
-                                placeholder="Máx"
-                                value={localPriceRange[1] || ""}
-                                onChange={(e) => setLocalPriceRange([localPriceRange[0], Number(e.target.value)])}
-                                onBlur={handlePriceCommit}
-                                className="text-sm"
-                            />
-                        </div>
-                    </div>
+                    <PriceRangeFields
+                        key={`${filters.priceMin ?? 0}-${filters.priceMax ?? 10000000}`}
+                        priceMin={filters.priceMin}
+                        priceMax={filters.priceMax}
+                        onCommit={setPriceRange}
+                    />
                 </CollapsibleSection>
 
-                {/* Property Type Section */}
                 <CollapsibleSection
                     title="Tipo de Propiedad"
                     isExpanded={expandedSections.type}
@@ -239,13 +185,13 @@ export function SearchFilters({ className, onClose, isSheet }: SearchFiltersProp
                                     size="sm"
                                     onClick={() => setPropertyType(isSelected ? null : type.id)}
                                     className={cn(
-                                        "justify-start gap-2 h-10 transition-all",
+                                        "h-10 justify-start gap-2 transition-all",
                                         isSelected
-                                            ? "bg-slate-900 text-white border-slate-900"
-                                            : "border-slate-200 hover:border-[#D4AF37]"
+                                            ? "border-ink-strong bg-ink-strong text-surface-0"
+                                            : "border-border text-ink-soft hover:border-accent-gold-soft"
                                     )}
                                 >
-                                    <Icon className="w-4 h-4" />
+                                    <Icon className="h-4 w-4" />
                                     {type.label}
                                 </Button>
                             )
@@ -253,7 +199,6 @@ export function SearchFilters({ className, onClose, isSheet }: SearchFiltersProp
                     </div>
                 </CollapsibleSection>
 
-                {/* Rooms Section */}
                 <CollapsibleSection
                     title="Dormitorios y Baños"
                     isExpanded={expandedSections.rooms}
@@ -261,43 +206,43 @@ export function SearchFilters({ className, onClose, isSheet }: SearchFiltersProp
                 >
                     <div className="space-y-4">
                         <div>
-                            <label className="text-sm text-slate-500 mb-2 block">Dormitorios</label>
+                            <label className="mb-2 block text-sm text-ink-soft">Dormitorios</label>
                             <div className="flex gap-1">
-                                {ROOM_OPTIONS.map((opt) => (
+                                {ROOM_OPTIONS.map((option) => (
                                     <Button
-                                        key={`bed-${opt.value}`}
+                                        key={`bed-${option.value}`}
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => setBedrooms(opt.value)}
+                                        onClick={() => setBedrooms(option.value)}
                                         className={cn(
-                                            "flex-1 text-xs px-2",
-                                            filters.bedrooms === opt.value
-                                                ? "bg-slate-900 text-white border-slate-900"
-                                                : "border-slate-200"
+                                            "flex-1 px-2 text-xs",
+                                            filters.bedrooms === option.value
+                                                ? "border-ink-strong bg-ink-strong text-surface-0"
+                                                : "border-border text-ink-soft"
                                         )}
                                     >
-                                        {opt.label}
+                                        {option.label}
                                     </Button>
                                 ))}
                             </div>
                         </div>
                         <div>
-                            <label className="text-sm text-slate-500 mb-2 block">Baños</label>
+                            <label className="mb-2 block text-sm text-ink-soft">Baños</label>
                             <div className="flex gap-1">
-                                {ROOM_OPTIONS.map((opt) => (
+                                {ROOM_OPTIONS.map((option) => (
                                     <Button
-                                        key={`bath-${opt.value}`}
+                                        key={`bath-${option.value}`}
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => setBathrooms(opt.value)}
+                                        onClick={() => setBathrooms(option.value)}
                                         className={cn(
-                                            "flex-1 text-xs px-2",
-                                            filters.bathrooms === opt.value
-                                                ? "bg-slate-900 text-white border-slate-900"
-                                                : "border-slate-200"
+                                            "flex-1 px-2 text-xs",
+                                            filters.bathrooms === option.value
+                                                ? "border-ink-strong bg-ink-strong text-surface-0"
+                                                : "border-border text-ink-soft"
                                         )}
                                     >
-                                        {opt.label}
+                                        {option.label}
                                     </Button>
                                 ))}
                             </div>
@@ -305,7 +250,6 @@ export function SearchFilters({ className, onClose, isSheet }: SearchFiltersProp
                     </div>
                 </CollapsibleSection>
 
-                {/* Features Section */}
                 <CollapsibleSection
                     title="Características"
                     isExpanded={expandedSections.features}
@@ -325,31 +269,90 @@ export function SearchFilters({ className, onClose, isSheet }: SearchFiltersProp
                                     className={cn(
                                         "gap-1.5 rounded-full transition-all",
                                         isSelected
-                                            ? "bg-[#D4AF37] text-white border-[#D4AF37]"
-                                            : "border-slate-200 hover:border-[#D4AF37]"
+                                            ? "border-accent-gold-soft bg-accent-gold-soft text-surface-0"
+                                            : "border-border text-ink-soft hover:border-accent-gold-soft"
                                     )}
                                 >
-                                    <Icon className="w-3.5 h-3.5" />
+                                    <Icon className="h-3.5 w-3.5" />
                                     {feature.label}
                                 </Button>
                             )
                         })}
                     </div>
                 </CollapsibleSection>
-
             </div>
 
-            {/* Loading Indicator */}
-            {isPending && (
-                <div className="absolute inset-0 bg-white/50 flex items-center justify-center pointer-events-none">
-                    <div className="w-6 h-6 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+            {isPending ? (
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-surface-0/60">
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent-gold-soft border-t-transparent" />
                 </div>
-            )}
+            ) : null}
         </aside>
     )
 }
 
-// Collapsible Section Component
+interface PriceRangeFieldsProps {
+    priceMin: number | null
+    priceMax: number | null
+    onCommit: (min: number | null, max: number | null) => void
+}
+
+function PriceRangeFields({ priceMin, priceMax, onCommit }: PriceRangeFieldsProps) {
+    const [localPriceRange, setLocalPriceRange] = useState<[number, number]>([
+        priceMin ?? 0,
+        priceMax ?? 10000000,
+    ])
+
+    const formatPrice = (value: number) => {
+        if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`
+        if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`
+        return `$${value}`
+    }
+
+    const handlePriceCommit = () => {
+        onCommit(
+            localPriceRange[0] > 0 ? localPriceRange[0] : null,
+            localPriceRange[1] < 10000000 ? localPriceRange[1] : null
+        )
+    }
+
+    return (
+        <div className="space-y-4">
+            <div className="flex justify-between text-sm">
+                <span className="text-ink-soft">{formatPrice(localPriceRange[0])}</span>
+                <span className="text-ink-soft">{formatPrice(localPriceRange[1])}</span>
+            </div>
+            <Slider
+                value={localPriceRange}
+                min={0}
+                max={10000000}
+                step={50000}
+                onValueChange={(value) => setLocalPriceRange(value as [number, number])}
+                onValueCommit={handlePriceCommit}
+                className="[&_[role=slider]]:border-accent-gold-soft [&_[role=slider]]:bg-accent-gold-soft"
+            />
+            <div className="flex gap-2">
+                <Input
+                    type="number"
+                    placeholder="Mín"
+                    value={localPriceRange[0] || ""}
+                    onChange={(event) => setLocalPriceRange([Number(event.target.value), localPriceRange[1]])}
+                    onBlur={handlePriceCommit}
+                    className="text-sm"
+                />
+                <Input
+                    type="number"
+                    placeholder="Máx"
+                    value={localPriceRange[1] || ""}
+                    onChange={(event) => setLocalPriceRange([localPriceRange[0], Number(event.target.value)])}
+                    onBlur={handlePriceCommit}
+                    className="text-sm"
+                />
+            </div>
+        </div>
+    )
+}
+
 interface CollapsibleSectionProps {
     title: string
     isExpanded: boolean
@@ -361,26 +364,23 @@ interface CollapsibleSectionProps {
 function CollapsibleSection({ title, isExpanded, onToggle, badge, children }: CollapsibleSectionProps) {
     return (
         <div className="space-y-3">
-            <button
-                onClick={onToggle}
-                className="flex items-center justify-between w-full group"
-            >
+            <button onClick={onToggle} className="group flex w-full items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm text-slate-900">{title}</span>
-                    {badge !== undefined && (
-                        <span className="w-5 h-5 rounded-full bg-[#D4AF37] text-white text-xs flex items-center justify-center">
+                    <span className="text-sm font-medium text-ink-strong">{title}</span>
+                    {badge !== undefined ? (
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent-gold-soft text-xs text-surface-0">
                             {badge}
                         </span>
-                    )}
+                    ) : null}
                 </div>
                 {isExpanded ? (
-                    <ChevronUp className="w-4 h-4 text-slate-400 group-hover:text-slate-600" />
+                    <ChevronUp className="h-4 w-4 text-ink-soft group-hover:text-ink-strong" />
                 ) : (
-                    <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-slate-600" />
+                    <ChevronDown className="h-4 w-4 text-ink-soft group-hover:text-ink-strong" />
                 )}
             </button>
             <AnimatePresence>
-                {isExpanded && (
+                {isExpanded ? (
                     <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
@@ -390,7 +390,7 @@ function CollapsibleSection({ title, isExpanded, onToggle, badge, children }: Co
                     >
                         {children}
                     </motion.div>
-                )}
+                ) : null}
             </AnimatePresence>
         </div>
     )

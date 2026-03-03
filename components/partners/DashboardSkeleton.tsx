@@ -1,7 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
-
 function SkeletonItem({ className }: { className?: string }) {
     return (
         <div className={`relative overflow-hidden bg-muted/20 ${className}`}>

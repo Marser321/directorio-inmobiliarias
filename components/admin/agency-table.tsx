@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Pencil, ExternalLink, MoreHorizontal } from 'lucide-react'
 import {
     DropdownMenu,
@@ -23,8 +24,18 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
+interface AgencyRow {
+    id: number | string
+    logo_url?: string
+    name: string
+    slug: string
+    tier_subscription?: string
+    is_verified?: boolean
+    created_at: string
+}
+
 interface AgencyTableProps {
-    agencies: any[]
+    agencies: AgencyRow[]
 }
 
 export function AgencyTable({ agencies }: AgencyTableProps) {
@@ -47,9 +58,12 @@ export function AgencyTable({ agencies }: AgencyTableProps) {
                         <TableRow key={agency.id}>
                             <TableCell>
                                 {agency.logo_url ? (
-                                    <img
+                                    <Image
                                         src={agency.logo_url}
                                         alt={agency.name}
+                                        width={40}
+                                        height={40}
+                                        unoptimized
                                         className="w-10 h-10 object-contain rounded-md bg-slate-50 border"
                                     />
                                 ) : (

@@ -3,6 +3,10 @@ import { CanvasSequenceAnimator } from '@/components/luxe';
 export const metadata = {
     title: 'Mansión de Lujo | LuxeEstate',
     description: 'Experiencia inmersiva de una mansión de lujo con vista 360°',
+    robots: {
+        index: false,
+        follow: false,
+    },
 };
 
 export default function DemoMansionPage() {

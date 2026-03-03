@@ -3,9 +3,10 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react'
-import { getSupabaseBrowserClient } from '@/lib/supabase-browser'
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
+import { setClientAccessToken } from '@/lib/insforge/client-token'
 
 export default function LoginPage() {
     const [email, setEmail] = useState('')
@@ -22,21 +23,26 @@ export default function LoginPage() {
         setIsLoading(true)
 
         try {
-            const supabase = getSupabaseBrowserClient()
-            const { error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
+            const response = await fetch('/api/auth/signin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email,
+                    password,
+                }),
             })
 
-            if (error) {
-                toast.error(error.message === 'Invalid login credentials'
-                    ? 'Email o contraseña incorrectos'
-                    : error.message)
+            const data = await response.json()
+
+            if (!response.ok) {
+                toast.error(data.error === 'Invalid login credentials' ? 'Email o contraseña incorrectos' : data.error)
                 return
             }
 
+            setClientAccessToken(data.accessToken)
+
             // Redirect to dashboard or intended page
-            window.location.href = redirectTo
+            window.location.href = data.redirectTo || redirectTo
         } catch {
             toast.error('Error al iniciar sesión. Intenta de nuevo.')
         } finally {
@@ -133,9 +139,9 @@ export default function LoginPage() {
                     <div className="mt-6 pt-6 border-t border-border text-center">
                         <p className="text-sm text-muted-foreground">
                             ¿No tienes cuenta?{' '}
-                            <a href="/partners/registro" className="text-gold hover:underline">
+                            <Link href="/partners/registro" className="text-gold hover:underline">
                                 Registra tu inmobiliaria
-                            </a>
+                            </Link>
                         </p>
                     </div>
                 </div>

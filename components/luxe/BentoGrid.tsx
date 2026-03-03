@@ -82,7 +82,7 @@ export function BentoGrid({
     const showSkeleton = isLoading || properties.length === 0;
 
     return (
-        <section className="py-24 bg-background">
+        <section className="py-24 bg-surface-0/80">
             <div className="container mx-auto px-6">
                 {/* Section Header */}
                 <motion.div
@@ -93,18 +93,27 @@ export function BentoGrid({
                     className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4"
                 >
                     <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent-gold-strong mb-2">
+                            Curaduría de Mercado
+                        </p>
                         <h2 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-2">
                             {title}
                         </h2>
-                        <div className="h-1 w-20 bg-gradient-to-r from-[#D4AF37] to-[#E8D48A] rounded-full mb-4" />
+                        <div className="section-divider-soft mb-4" />
                         <p className="text-muted-foreground text-lg">{subtitle}</p>
                     </div>
 
-                    <button className="group flex items-center gap-2 text-[#D4AF37] font-semibold hover:gap-3 transition-all" data-magnetic="true">
+                    <button className="group flex items-center gap-2 text-accent-gold-strong font-semibold hover:gap-3 transition-all" data-magnetic="true">
                         Ver todas las propiedades
                         <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </button>
                 </motion.div>
+
+                {!showSkeleton ? (
+                    <p className="mb-6 text-sm text-ink-soft">
+                        {properties.length} propiedades activas en esta selección editorial.
+                    </p>
+                ) : null}
 
                 {/* Grid Layout */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[minmax(300px,auto)]">
@@ -133,4 +142,3 @@ export function BentoGrid({
         </section>
     );
 }
-

@@ -1,14 +1,17 @@
 'use client'
 
 import { useMemo } from 'react'
+import Image from 'next/image'
 import {
     useReactTable,
     getCoreRowModel,
     getSortedRowModel,
     getFilteredRowModel,
+    getPaginationRowModel,
     flexRender,
     createColumnHelper,
     SortingState,
+    PaginationState,
 } from '@tanstack/react-table'
 import { useState } from 'react'
 import {
@@ -23,7 +26,7 @@ import {
 } from 'lucide-react'
 
 // Property type for the table
-interface PropertyRow {
+export interface PropertyRow {
     id: number
     title: string
     slug: string
@@ -74,16 +77,20 @@ function formatPrice(price: number, currency: 'USD' | 'UYU'): string {
 export function PropertiesTable({ properties, onToggleFeatured, onEdit }: PropertiesTableProps) {
     const [sorting, setSorting] = useState<SortingState>([])
     const [globalFilter, setGlobalFilter] = useState('')
+    const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 })
 
     const columns = useMemo(() => [
         columnHelper.accessor('main_image', {
             header: '',
             cell: (info) => (
-                <div className="w-16 h-12 rounded-lg overflow-hidden bg-muted">
+                <div className="relative w-16 h-12 rounded-lg overflow-hidden bg-muted">
                     {info.getValue() ? (
-                        <img
+                        <Image
                             src={info.getValue()!}
                             alt=""
+                            fill
+                            unoptimized
+                            sizes="64px"
                             className="w-full h-full object-cover"
                         />
                     ) : (
@@ -194,19 +201,27 @@ export function PropertiesTable({ properties, onToggleFeatured, onEdit }: Proper
         }),
     ], [onToggleFeatured, onEdit])
 
+    // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table hook is expected here.
     const table = useReactTable({
         data: properties,
         columns,
         state: {
             sorting,
             globalFilter,
+            pagination,
         },
         onSortingChange: setSorting,
         onGlobalFilterChange: setGlobalFilter,
+        onPaginationChange: setPagination,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
     })
+
+    const filteredCount = table.getFilteredRowModel().rows.length
+    const startRow = filteredCount === 0 ? 0 : pagination.pageIndex * pagination.pageSize + 1
+    const endRow = Math.min((pagination.pageIndex + 1) * pagination.pageSize, filteredCount)
 
     return (
         <div>
@@ -277,9 +292,29 @@ export function PropertiesTable({ properties, onToggleFeatured, onEdit }: Proper
             {/* Pagination info */}
             <div className="p-4 border-t border-border/50 flex items-center justify-between text-sm text-muted-foreground">
                 <span>
-                    Mostrando {table.getRowModel().rows.length} de {properties.length} propiedades
+                    Mostrando {startRow}-{endRow} de {filteredCount} propiedades
                 </span>
-                {/* TODO: Add pagination controls for large datasets */}
+                <div className="flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={() => table.previousPage()}
+                        disabled={!table.getCanPreviousPage()}
+                        className="px-3 py-1.5 rounded-md border border-border hover:bg-muted/50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                        Anterior
+                    </button>
+                    <span className="text-xs">
+                        Página {table.getState().pagination.pageIndex + 1} de {Math.max(table.getPageCount(), 1)}
+                    </span>
+                    <button
+                        type="button"
+                        onClick={() => table.nextPage()}
+                        disabled={!table.getCanNextPage()}
+                        className="px-3 py-1.5 rounded-md border border-border hover:bg-muted/50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                        Siguiente
+                    </button>
+                </div>
             </div>
         </div>
     )

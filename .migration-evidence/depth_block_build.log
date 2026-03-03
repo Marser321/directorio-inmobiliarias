@@ -1,0 +1,28 @@
+
+> realpde@0.1.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 5.2s
+  Running TypeScript ...
+  Collecting page data using 7 workers ...
+⚠ Using edge runtime on a page currently disables static generation for that page
+  Generating static pages using 7 workers (0/61) ...
+  Generating static pages using 7 workers (15/61) 
+⨯ useSearchParams() should be wrapped in a suspense boundary at page "/compare". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at Q (/Users/mariomorera/Desktop/carpeta sin título/Directorio Inmobiliarias/.next/server/chunks/ssr/node_modules_next_f2865b38._.js:2:2111)
+    at o (/Users/mariomorera/Desktop/carpeta sin título/Directorio Inmobiliarias/.next/server/chunks/ssr/node_modules_next_f2865b38._.js:4:5314)
+    at m (/Users/mariomorera/Desktop/carpeta sin título/Directorio Inmobiliarias/.next/server/chunks/ssr/_685448d5._.js:1:736)
+    at an (/Users/mariomorera/Desktop/carpeta sin título/Directorio Inmobiliarias/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.prod.js:2:84360)
+    at ai (/Users/mariomorera/Desktop/carpeta sin título/Directorio Inmobiliarias/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.prod.js:2:86179)
+    at al (/Users/mariomorera/Desktop/carpeta sin título/Directorio Inmobiliarias/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.prod.js:2:107953)
+    at as (/Users/mariomorera/Desktop/carpeta sin título/Directorio Inmobiliarias/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.prod.js:2:105368)
+    at aa (/Users/mariomorera/Desktop/carpeta sin título/Directorio Inmobiliarias/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.prod.js:2:84712)
+    at ai (/Users/mariomorera/Desktop/carpeta sin título/Directorio Inmobiliarias/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.prod.js:2:86228)
+    at ai (/Users/mariomorera/Desktop/carpeta sin título/Directorio Inmobiliarias/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.prod.js:2:104708)
+Error occurred prerendering page "/compare". Read more: https://nextjs.org/docs/messages/prerender-error
+Export encountered an error on /compare/page: /compare, exiting the build.
+⨯ Next.js build worker exited with code: 1 and signal: null

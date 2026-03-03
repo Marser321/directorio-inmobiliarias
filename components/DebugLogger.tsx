@@ -16,7 +16,7 @@ export function DebugLogger() {
         const originalError = console.error
         const originalWarn = console.warn
 
-        const safeStringify = (arg: any) => {
+        const safeStringify = (arg: unknown) => {
             try {
                 if (typeof arg === 'object') return JSON.stringify(arg, null, 2)
                 return String(arg)

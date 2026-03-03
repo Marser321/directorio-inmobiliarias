@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import {
     AlertTriangle,
-    TrendingUp,
     Search,
+    Target,
     CheckCircle2,
     XCircle,
     RefreshCw,
@@ -14,15 +14,13 @@ import {
     Activity,
     Clock,
     ChevronRight,
+    MessageCircle,
 } from 'lucide-react'
-import { createClient } from '@supabase/supabase-js'
+import { createClient as createBrowserClient } from '@/utils/supabase/client'
 
-// Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-const supabase = supabaseUrl && supabaseAnonKey
-    ? createClient(supabaseUrl, supabaseAnonKey)
-    : null
+const supabase = createBrowserClient()
+const FUNNEL_DAY_OPTIONS = [7, 14, 30] as const
+type FunnelDayWindow = (typeof FUNNEL_DAY_OPTIONS)[number]
 
 interface CoverageGap {
     neighborhood: string
@@ -47,23 +45,32 @@ interface QualityLog {
     status: string
 }
 
-// Mock data for demo when Supabase is not connected
-const mockCoverageGaps: CoverageGap[] = [
-    { neighborhood: 'Punta Ballena', zone: 'Maldonado', property_category: 'casa_grande', property_count: 0, priority: 'urgent' },
-    { neighborhood: 'Manantiales', zone: 'La Barra', property_category: 'apartamento', property_count: 2, priority: 'high' },
-    { neighborhood: 'Pinares', zone: 'Punta del Este', property_category: 'casa_media', property_count: 1, priority: 'high' },
-]
-
-const mockSuggestions: InnovationSuggestion[] = [
-    { query: 'terreno en jose ignacio', search_count: 15, suggested_category: 'terreno' },
-    { query: 'local comercial la barra', search_count: 8, suggested_category: 'local_comercial' },
-    { query: 'oficina punta del este', search_count: 5, suggested_category: 'oficina' },
-]
-
-const mockQualityLogs: QualityLog[] = [
-    { id: '1', created_at: new Date().toISOString(), entity_type: 'agency', check_type: 'phone', is_discrepancy: true, status: 'updated' },
-    { id: '2', created_at: new Date().toISOString(), entity_type: 'agency', check_type: 'hours', is_discrepancy: false, status: 'detected' },
-]
+interface FunnelSummary {
+    totals: {
+        hero_search_submitted: number
+        search_results_loaded: number
+        search_result_clicked: number
+        property_viewed: number
+        whatsapp_clicked: number
+        lead_form_submitted: number
+    }
+    conversion: {
+        search_to_click: number
+        click_to_view: number
+        view_to_whatsapp: number
+        view_to_lead: number
+    }
+    byCoordinateSource?: {
+        source: 'manual' | 'geocoded' | 'centroid' | 'none' | 'unknown'
+        total_events: number
+        property_viewed: number
+        whatsapp_clicked: number
+        lead_form_submitted: number
+        view_to_whatsapp: number
+        view_to_lead: number
+    }[]
+    periodDays?: number
+}
 
 // Stat Card Component
 function StatCard({
@@ -118,21 +125,35 @@ function PriorityBadge({ priority }: { priority: string }) {
     )
 }
 
+function getCoordinateSourceLabel(source: string) {
+    if (source === 'manual') return 'Manual'
+    if (source === 'geocoded') return 'Geocodificada'
+    if (source === 'centroid') return 'Centroide de zona'
+    if (source === 'none') return 'Sin coordenadas'
+    return 'No informado'
+}
+
+function getCoordinateSourceBadgeClass(source: string) {
+    if (source === 'manual') return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+    if (source === 'geocoded') return 'bg-sky-500/20 text-sky-400 border-sky-500/30'
+    if (source === 'centroid') return 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+    if (source === 'none') return 'bg-red-500/20 text-red-400 border-red-500/30'
+    return 'bg-muted/40 text-muted-foreground border-border/60'
+}
+
 export default function ManagerDashboardPage() {
-    const [coverageGaps, setCoverageGaps] = useState<CoverageGap[]>(mockCoverageGaps)
-    const [suggestions, setSuggestions] = useState<InnovationSuggestion[]>(mockSuggestions)
-    const [qualityLogs, setQualityLogs] = useState<QualityLog[]>(mockQualityLogs)
-    const [isLoading, setIsLoading] = useState(false)
+    const [coverageGaps, setCoverageGaps] = useState<CoverageGap[]>([])
+    const [suggestions, setSuggestions] = useState<InnovationSuggestion[]>([])
+    const [qualityLogs, setQualityLogs] = useState<QualityLog[]>([])
+    const [funnelSummary, setFunnelSummary] = useState<FunnelSummary | null>(null)
+    const [isRefreshingAll, setIsRefreshingAll] = useState(false)
+    const [isFunnelLoading, setIsFunnelLoading] = useState(false)
     const [lastRefresh, setLastRefresh] = useState<Date>(new Date())
+    const [selectedFunnelDays, setSelectedFunnelDays] = useState<FunnelDayWindow>(7)
+    const funnelAbortRef = useRef<AbortController | null>(null)
+    const funnelRequestIdRef = useRef(0)
 
-    // Fetch data from Supabase
-    const fetchData = async () => {
-        if (!supabase) {
-            console.warn('[ManagerDashboard] Supabase not configured, using mock data')
-            return
-        }
-
-        setIsLoading(true)
+    const fetchCoreData = useCallback(async () => {
         try {
             // Fetch coverage gaps
             const { data: gaps } = await supabase.rpc('get_coverage_gaps')
@@ -149,22 +170,80 @@ export default function ManagerDashboardPage() {
                 .order('created_at', { ascending: false })
                 .limit(10)
             if (logs) setQualityLogs(logs)
-
             setLastRefresh(new Date())
         } catch (error) {
             console.error('[ManagerDashboard] Error fetching data:', error)
-        } finally {
-            setIsLoading(false)
         }
-    }
+    }, [])
+
+    const fetchFunnelData = useCallback(async (days: FunnelDayWindow) => {
+        const requestId = funnelRequestIdRef.current + 1
+        funnelRequestIdRef.current = requestId
+        funnelAbortRef.current?.abort()
+        const controller = new AbortController()
+        funnelAbortRef.current = controller
+
+        setIsFunnelLoading(true)
+        try {
+            const funnelResponse = await fetch(`/api/manager/funnel/summary?days=${days}`, {
+                cache: 'no-store',
+                signal: controller.signal,
+            })
+            if (funnelResponse.ok) {
+                const payload = await funnelResponse.json()
+                if (requestId === funnelRequestIdRef.current) {
+                    setFunnelSummary((payload?.data || null) as FunnelSummary | null)
+                }
+            }
+            if (requestId === funnelRequestIdRef.current) {
+                setLastRefresh(new Date())
+            }
+        } catch (error) {
+            if (error instanceof DOMException && error.name === 'AbortError') {
+                return
+            }
+            console.error('[ManagerDashboard] Error fetching funnel summary:', error)
+        } finally {
+            if (requestId === funnelRequestIdRef.current) {
+                setIsFunnelLoading(false)
+            }
+        }
+    }, [])
+
+    const refreshAllData = useCallback(async () => {
+        setIsRefreshingAll(true)
+        try {
+            await Promise.all([fetchCoreData(), fetchFunnelData(selectedFunnelDays)])
+        } finally {
+            setIsRefreshingAll(false)
+        }
+    }, [fetchCoreData, fetchFunnelData, selectedFunnelDays])
+
+    // Fetch data from Supabase
+    useEffect(() => {
+        void fetchCoreData()
+    }, [fetchCoreData])
 
     useEffect(() => {
-        fetchData()
+        void fetchFunnelData(selectedFunnelDays)
+    }, [fetchFunnelData, selectedFunnelDays])
+
+    useEffect(() => {
+        return () => {
+            funnelAbortRef.current?.abort()
+        }
     }, [])
 
     const urgentGaps = coverageGaps.filter(g => g.priority === 'urgent').length
     const totalGaps = coverageGaps.length
     const discrepancies = qualityLogs.filter(l => l.is_discrepancy).length
+    const coordinateSourceRows = [...(funnelSummary?.byCoordinateSource || [])]
+        .sort((a, b) => {
+            if (b.view_to_whatsapp !== a.view_to_whatsapp) return b.view_to_whatsapp - a.view_to_whatsapp
+            if (b.property_viewed !== a.property_viewed) return b.property_viewed - a.property_viewed
+            return b.total_events - a.total_events
+        })
+    const topCoordinateSource = coordinateSourceRows[0] || null
 
     return (
         <div className="min-h-[calc(100vh-4rem)] p-6 md:p-8">
@@ -189,13 +268,37 @@ export default function ManagerDashboardPage() {
                             <Clock className="w-3 h-3" />
                             Última actualización: {lastRefresh.toLocaleTimeString()}
                         </span>
+                        <div className="flex items-center gap-1 rounded-xl border border-border/70 bg-background/70 p-1">
+                            {FUNNEL_DAY_OPTIONS.map((days) => (
+                                <button
+                                    key={days}
+                                    type="button"
+                                    onClick={() => setSelectedFunnelDays(days)}
+                                    disabled={isFunnelLoading || isRefreshingAll}
+                                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors disabled:opacity-60 ${selectedFunnelDays === days
+                                        ? 'bg-gold text-black'
+                                        : 'text-muted-foreground hover:bg-muted/60'
+                                        }`}
+                                >
+                                    {days}d
+                                </button>
+                            ))}
+                        </div>
+                        {isFunnelLoading ? (
+                            <span className="text-xs text-sky-400 flex items-center gap-1">
+                                <RefreshCw className="w-3 h-3 animate-spin" />
+                                Actualizando funnel...
+                            </span>
+                        ) : null}
                         <button
-                            onClick={fetchData}
-                            disabled={isLoading}
+                            onClick={() => {
+                                void refreshAllData()
+                            }}
+                            disabled={isRefreshingAll}
                             className="btn-luxe py-2 px-4 rounded-xl text-white font-medium flex items-center gap-2 disabled:opacity-50"
                         >
-                            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-                            {isLoading ? 'Actualizando...' : 'Actualizar'}
+                            <RefreshCw className={`w-4 h-4 ${isRefreshingAll ? 'animate-spin' : ''}`} />
+                            {isRefreshingAll ? 'Actualizando...' : 'Actualizar'}
                         </button>
                     </div>
                 </motion.div>
@@ -236,6 +339,124 @@ export default function ManagerDashboardPage() {
                         color="gold"
                     />
                 </motion.div>
+
+                {funnelSummary ? (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.15 }}
+                        className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 transition-opacity ${isFunnelLoading ? 'opacity-75' : 'opacity-100'
+                            }`}
+                    >
+                        <StatCard
+                            icon={Search}
+                            label="Search -> Click"
+                            value={`${funnelSummary.conversion.search_to_click}%`}
+                            sublabel={`${funnelSummary.totals.search_result_clicked} clics sobre ${funnelSummary.totals.search_results_loaded} resultados`}
+                            color="blue"
+                        />
+                        <StatCard
+                            icon={Activity}
+                            label="Click -> Ficha"
+                            value={`${funnelSummary.conversion.click_to_view}%`}
+                            sublabel={`${funnelSummary.totals.property_viewed} vistas de ficha`}
+                            color="gold"
+                        />
+                        <StatCard
+                            icon={MessageCircle}
+                            label="Ficha -> WhatsApp"
+                            value={`${funnelSummary.conversion.view_to_whatsapp}%`}
+                            sublabel={`${funnelSummary.totals.whatsapp_clicked} clics WhatsApp`}
+                            color="green"
+                        />
+                        <StatCard
+                            icon={Target}
+                            label="Ficha -> Lead"
+                            value={`${funnelSummary.conversion.view_to_lead}%`}
+                            sublabel={`${funnelSummary.totals.lead_form_submitted} leads internos`}
+                            color="gold"
+                        />
+                    </motion.div>
+                ) : null}
+
+                {funnelSummary?.byCoordinateSource && funnelSummary.byCoordinateSource.length > 0 ? (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.18 }}
+                        className={`glass-card rounded-xl overflow-hidden transition-opacity ${isFunnelLoading ? 'opacity-75' : 'opacity-100'
+                            }`}
+                    >
+                        <div className="p-5 border-b border-border/50 flex items-center justify-between">
+                            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                                <MapPin className="w-5 h-5 text-gold" />
+                                Impacto por Origen de Coordenadas
+                            </h2>
+                            <div className="flex items-center gap-2">
+                                {isFunnelLoading ? (
+                                    <span className="text-xs text-sky-400 flex items-center gap-1">
+                                        <RefreshCw className="w-3 h-3 animate-spin" />
+                                        Actualizando...
+                                    </span>
+                                ) : null}
+                                <span className="text-xs text-muted-foreground">
+                                    Ventana {funnelSummary.periodDays || 7} días
+                                </span>
+                            </div>
+                        </div>
+                        {topCoordinateSource ? (
+                            <div className="px-5 py-3 border-b border-border/40 bg-muted/20 text-sm text-muted-foreground">
+                                Mejor fuente a WhatsApp:
+                                <span className="text-foreground font-semibold ml-1">
+                                    {getCoordinateSourceLabel(topCoordinateSource.source)}
+                                </span>
+                                <span className="ml-2">
+                                    ({topCoordinateSource.view_to_whatsapp}% con {topCoordinateSource.property_viewed} vistas)
+                                </span>
+                            </div>
+                        ) : null}
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead className="bg-muted/30">
+                                    <tr className="text-left text-xs text-muted-foreground">
+                                        <th className="p-3 font-medium">Origen</th>
+                                        <th className="p-3 font-medium">Eventos (alta intención)</th>
+                                        <th className="p-3 font-medium">Vista → WhatsApp</th>
+                                        <th className="p-3 font-medium">Vista → Lead</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-border/30">
+                                    {coordinateSourceRows.map((row) => (
+                                        <tr key={row.source} className="hover:bg-gold/5 transition-colors">
+                                            <td className="p-3">
+                                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-xs font-medium ${getCoordinateSourceBadgeClass(row.source)}`}>
+                                                    {getCoordinateSourceLabel(row.source)}
+                                                </span>
+                                            </td>
+                                            <td className="p-3 text-sm text-foreground">
+                                                <span className="font-semibold">{row.total_events}</span>
+                                                <span className="text-xs text-muted-foreground ml-2">
+                                                    ({row.property_viewed} vistas, {row.whatsapp_clicked} WA)
+                                                </span>
+                                            </td>
+                                            <td className="p-3 text-sm text-foreground font-medium">
+                                                {row.view_to_whatsapp}%
+                                                {row.property_viewed < 5 ? (
+                                                    <span className="ml-2 text-xs font-normal text-amber-400">
+                                                        muestra baja
+                                                    </span>
+                                                ) : null}
+                                            </td>
+                                            <td className="p-3 text-sm text-foreground font-medium">
+                                                {row.view_to_lead}%
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </motion.div>
+                ) : null}
 
                 {/* Two Column Layout */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -313,7 +534,7 @@ export default function ManagerDashboardPage() {
                                     <div key={i} className="p-4 hover:bg-gold/5 transition-colors">
                                         <div className="flex items-start justify-between">
                                             <div>
-                                                <p className="font-medium text-foreground">"{suggestion.query}"</p>
+                                                <p className="font-medium text-foreground">&quot;{suggestion.query}&quot;</p>
                                                 <p className="text-sm text-muted-foreground mt-1">
                                                     {suggestion.search_count} búsquedas • Sugerencia:
                                                     <span className="text-gold ml-1 font-medium">

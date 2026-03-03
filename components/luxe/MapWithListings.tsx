@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { PropertyCard } from './PropertyCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Map as MapIcon, List, Grid3X3 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 // Dynamic import to avoid SSR issues with Leaflet
 const LuxeMap = dynamic(() => import('./LuxeMap'), {
@@ -60,7 +61,7 @@ export function MapWithListings({
     };
 
     return (
-        <section className="py-24 bg-background">
+        <section className="py-24 bg-surface-0/75">
             <div className="container mx-auto px-6">
                 {/* Section Header */}
                 <motion.div
@@ -71,10 +72,13 @@ export function MapWithListings({
                     className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4"
                 >
                     <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent-gold-strong mb-2">
+                            Exploración Geográfica
+                        </p>
                         <h2 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-2">
                             {title}
                         </h2>
-                        <div className="h-1 w-20 bg-gradient-to-r from-[#D4AF37] to-[#E8D48A] rounded-full mb-4" />
+                        <div className="section-divider-soft mb-4" />
                         <p className="text-muted-foreground text-lg">{subtitle}</p>
                     </div>
 
@@ -126,23 +130,22 @@ export function MapWithListings({
                 >
                     {/* Map */}
                     {viewMode !== 'list' && (
-                        <div className={`rounded-xl overflow-hidden border border-border shadow-lg ${viewMode === 'map' ? 'h-[70vh]' : 'h-[500px] lg:h-[600px]'
-                            }`}>
-                            <LuxeMap
-                                properties={properties}
-                                hoveredPropertyId={hoveredPropertyId}
-                                onMarkerHover={handlePropertyHover}
-                                onMarkerClick={handleMarkerClick}
-                            />
+                        <div className={cn(viewMode === 'split' && 'lg:sticky lg:top-24 self-start')}>
+                            <div className={`rounded-xl overflow-hidden border border-border shadow-lg ${viewMode === 'map' ? 'h-[70vh]' : 'h-[500px] lg:h-[600px]'
+                                }`}>
+                                <LuxeMap
+                                    properties={properties}
+                                    hoveredPropertyId={hoveredPropertyId}
+                                    onMarkerHover={handlePropertyHover}
+                                    onMarkerClick={handleMarkerClick}
+                                />
+                            </div>
                         </div>
                     )}
 
                     {/* Property List */}
                     {viewMode !== 'map' && (
-                        <div className={`space-y-4 ${viewMode === 'split'
-                            ? 'max-h-[600px] overflow-y-auto pr-2 scrollbar-hide'
-                            : ''
-                            }`}>
+                        <div className="space-y-4">
                             {properties.map((property, index) => (
                                 <motion.div
                                     key={property.id}
@@ -153,7 +156,7 @@ export function MapWithListings({
                                     onMouseEnter={() => handlePropertyHover(property.id)}
                                     onMouseLeave={() => handlePropertyHover(null)}
                                     className={`transition-all duration-300 ${hoveredPropertyId === property.id
-                                        ? 'ring-2 ring-[#D4AF37] rounded-2xl'
+                                        ? 'ring-2 ring-accent-gold-soft rounded-2xl'
                                         : ''
                                         }`}
                                 >

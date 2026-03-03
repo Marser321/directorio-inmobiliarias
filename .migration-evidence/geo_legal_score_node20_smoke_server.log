@@ -1,0 +1,23 @@
+
+> realpde@0.1.0 predev
+> node scripts/check-env.mjs --require-public --warn-server --context dev
+
+[dotenv@17.2.4] injecting env (27) from .env.local -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+[check-env] Warnings for context "dev"
+Warnings:
+- Missing optional privileged variables: STRIPE_WEBHOOK_SECRET
+[check-env] OK (dev)
+
+> realpde@0.1.0 dev
+> next dev --webpack
+
+⚠ Port 3000 is in use by process 69722, using available port 3001 instead.
+▲ Next.js 16.1.6 (webpack)
+- Local:         http://localhost:3001
+- Network:       http://192.168.1.4:3001
+- Environments: .env.local
+
+✓ Starting...
+⨯ Unable to acquire lock at /Users/mariomorera/Desktop/carpeta sin título/Directorio Inmobiliarias/.next/dev/lock, is another instance of next dev running?
+  Suggestion: If you intended to restart next dev, terminate the other process, and then try again.
+[?25h

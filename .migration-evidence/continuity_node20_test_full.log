@@ -1,0 +1,277 @@
+No server detected on http://localhost:3000. Starting `npm run dev`...
+
+> realpde@0.1.0 predev
+> node scripts/check-env.mjs --require-public --warn-server --context dev
+
+[dotenv@17.2.4] injecting env (12) from .env.local -- tip: ⚙️  suppress all logs with { quiet: true }
+[check-env] Warnings for context "dev"
+Warnings:
+- No privileged DB key found (INSFORGE_SERVICE_ROLE_KEY / SUPABASE_SERVICE_ROLE_KEY / INSFORGE_ADMIN_API_KEY).
+- Missing optional privileged variables: STRIPE_WEBHOOK_SECRET
+[check-env] OK (dev)
+
+> realpde@0.1.0 dev
+> next dev --webpack
+
+▲ Next.js 16.1.6 (webpack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.4:3000
+- Environments: .env.local
+
+✓ Starting...
+✓ Ready in 1263ms
+ GET /api/health/config 200 in 490ms (compile: 477ms, render: 13ms)
+TAP version 13
+ GET /api/health/config 200 in 8ms (compile: 5ms, render: 3ms)
+ GET /api/health/config 200 in 7ms (compile: 4ms, render: 3ms)
+ GET /api/search/properties?limit=5 200 in 1001ms (compile: 494ms, render: 507ms)
+ POST /api/events/funnel 202 in 1023ms (compile: 485ms, render: 538ms)
+# Subtest: funnel endpoint accepts valid public events
+ok 1 - funnel endpoint accepts valid public events
+  ---
+  duration_ms: 1085.565041
+  ...
+ POST /api/events/funnel 400 in 5ms (compile: 2ms, render: 3ms)
+# Subtest: funnel endpoint rejects metadata with PII
+ok 2 - funnel endpoint rejects metadata with PII
+  ---
+  duration_ms: 7.45075
+  ...
+ GET /api/search/properties?status=for_sale&price_min=100000&price_max=20000000&bedrooms=1&bathrooms=1&limit=20 200 in 167ms (compile: 3ms, render: 164ms)
+ GET /api/search/properties?limit=1 200 in 161ms (compile: 1814µs, render: 159ms)
+ GET /api/search/properties?sort=price_asc&limit=20 200 in 166ms (compile: 1563µs, render: 164ms)
+ POST /api/events/funnel 202 in 158ms (compile: 1347µs, render: 157ms)
+ GET /api/search/properties?sort=price_desc&limit=20 200 in 223ms (compile: 1675µs, render: 222ms)
+ POST /api/events/funnel 202 in 208ms (compile: 1190µs, render: 207ms)
+ GET /api/search/properties?sort=newest&limit=2 200 in 182ms (compile: 23ms, render: 160ms)
+ POST /api/events/funnel 202 in 166ms (compile: 9ms, render: 157ms)
+ GET /api/search/properties?sort=newest&limit=2&cursor=eyJvZmZzZXQiOjJ9 200 in 161ms (compile: 3ms, render: 159ms)
+ POST /api/events/funnel 202 in 161ms (compile: 4ms, render: 157ms)
+ GET /api/search/properties?limit=40 200 in 162ms (compile: 1792µs, render: 160ms)
+ POST /api/events/funnel 202 in 162ms (compile: 4ms, render: 158ms)
+# Subtest: funnel sequence Search -> Ficha -> WhatsApp is accepted
+ok 3 - funnel sequence Search -> Ficha -> WhatsApp is accepted
+  ---
+  duration_ms: 1061.727583
+  ...
+ GET /api/search/properties?limit=1 200 in 5ms (compile: 1156µs, render: 3ms)
+ GET /api/search/properties?search_as_move=true&north=-34.8258&south=-34.8458&east=-54.629200000000004&west=-54.6492&limit=50 200 in 182ms (compile: 1658µs, render: 180ms)
+ GET /api/search/properties?q=no-result-1772547171597-zzz&limit=12 200 in 611ms (compile: 441ms, render: 170ms)
+ POST /api/leads 201 in 1395ms (compile: 620ms, render: 775ms)
+# Subtest: lead fallback endpoint creates pending lead
+ok 4 - lead fallback endpoint creates pending lead
+  ---
+  duration_ms: 1403.72975
+  ...
+ POST /api/leads 400 in 9ms (compile: 4ms, render: 5ms)
+# Subtest: lead fallback validation rejects malformed payload
+ok 5 - lead fallback validation rejects malformed payload
+  ---
+  duration_ms: 15.23425
+  ...
+# Subtest: checklist passes with complete publish requirements
+ok 6 - checklist passes with complete publish requirements
+  ---
+  duration_ms: 0.528
+  ...
+# Subtest: checklist fails when media count is below minimum
+ok 7 - checklist fails when media count is below minimum
+  ---
+  duration_ms: 0.087625
+  ...
+# Subtest: checklist fails when description or location is incomplete
+ok 8 - checklist fails when description or location is incomplete
+  ---
+  duration_ms: 0.071583
+  ...
+# Subtest: resolvePropertyCoordinates uses manual coordinates first
+ok 9 - resolvePropertyCoordinates uses manual coordinates first
+  ---
+  duration_ms: 0.822833
+  ...
+# Subtest: resolvePropertyCoordinates uses geocoded point before centroid
+ok 10 - resolvePropertyCoordinates uses geocoded point before centroid
+  ---
+  duration_ms: 2.357416
+  ...
+# Subtest: resolvePropertyCoordinates falls back to centroid when geocoding flag is disabled
+ok 11 - resolvePropertyCoordinates falls back to centroid when geocoding flag is disabled
+  ---
+  duration_ms: 0.170417
+  ...
+# Subtest: resolvePropertyCoordinates returns none when no source is available
+ok 12 - resolvePropertyCoordinates returns none when no source is available
+  ---
+  duration_ms: 0.071792
+  ...
+# Subtest: search API returns contract fields
+ok 13 - search API returns contract fields
+  ---
+  duration_ms: 1063.079875
+  ...
+# Subtest: combined filters enforce constraints
+ok 14 - combined filters enforce constraints
+  ---
+  duration_ms: 171.282583
+  ...
+# Subtest: price sorting modes are respected
+ok 15 - price sorting modes are respected
+  ---
+  duration_ms: 394.023917
+  ...
+# Subtest: cursor pagination returns next page without duplicates
+ok 16 - cursor pagination returns next page without duplicates
+  ---
+  duration_ms: 367.232916
+  ...
+# Subtest: search_as_move filters by real map bounds
+ok 17 - search_as_move filters by real map bounds
+  ---
+  duration_ms: 348.593791
+  ...
+# Subtest: empty results return valid response shape
+ok 18 - empty results return valid response shape
+  ---
+  duration_ms: 615.42325
+  ...
+# Subtest: featured outranks non-featured when other factors are equal
+ok 19 - featured outranks non-featured when other factors are equal
+  ---
+  duration_ms: 6.8685
+  ...
+# Subtest: tie score is stable and resolves by id descending
+ok 20 - tie score is stable and resolves by id descending
+  ---
+  duration_ms: 0.13425
+  ...
+# Subtest: lifestyle match boosts score when filters are present
+ok 21 - lifestyle match boosts score when filters are present
+  ---
+  duration_ms: 0.109459
+  ...
+# Subtest: price band match influences ranking inside a target range
+ok 22 - price band match influences ranking inside a target range
+  ---
+  duration_ms: 0.14575
+  ...
+# Subtest: ranking is deterministic for repeated executions
+ok 23 - ranking is deterministic for repeated executions
+  ---
+  duration_ms: 0.574375
+  ...
+1..23
+# tests 23
+# suites 0
+# pass 23
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3765.807583
+ GET /api/health/config 200 in 5ms (compile: 3ms, render: 1683µs)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 161ms (compile: 816µs, render: 161ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 3ms (compile: 1230µs, render: 1650µs)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 2ms (compile: 907µs, render: 1389µs)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 1956µs (compile: 720µs, render: 1236µs)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 3ms (compile: 757µs, render: 1918µs)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 2ms (compile: 774µs, render: 1444µs)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 9ms (compile: 3ms, render: 5ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 3ms, render: 5ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 3ms, render: 5ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 3ms, render: 5ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 7ms (compile: 1838µs, render: 5ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 7ms (compile: 1504µs, render: 5ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 4ms, render: 4ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 7ms (compile: 3ms, render: 4ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 6ms (compile: 3ms, render: 3ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 6ms (compile: 2ms, render: 3ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 10ms (compile: 4ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 9ms (compile: 2ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 9ms (compile: 2ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 1698µs, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 1601µs, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 1525µs, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 1414µs, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 10ms (compile: 4ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 9ms (compile: 2ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 2ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 2ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 2ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 2ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 1811µs, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 13ms (compile: 4ms, render: 9ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 12ms (compile: 2ms, render: 9ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 11ms (compile: 2ms, render: 9ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 11ms (compile: 2ms, render: 9ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 11ms (compile: 2ms, render: 9ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 11ms (compile: 1975µs, render: 9ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 11ms (compile: 1885µs, render: 9ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 11ms (compile: 1802µs, render: 9ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 9ms (compile: 3ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 9ms (compile: 3ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 9ms (compile: 3ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 9ms (compile: 3ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 9ms (compile: 2ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 2ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 2ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 1751µs, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 9ms (compile: 2ms, render: 7ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 9ms (compile: 2ms, render: 7ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 9ms (compile: 2ms, render: 7ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 9ms (compile: 2ms, render: 7ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 9ms (compile: 1973µs, render: 7ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 9ms (compile: 1886µs, render: 7ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 9ms (compile: 1812µs, render: 7ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 9ms (compile: 1727µs, render: 7ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 11ms (compile: 4ms, render: 8ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 11ms (compile: 3ms, render: 8ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 11ms (compile: 3ms, render: 8ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 11ms (compile: 3ms, render: 8ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 11ms (compile: 3ms, render: 8ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 11ms (compile: 3ms, render: 8ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 10ms (compile: 3ms, render: 8ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 10ms (compile: 3ms, render: 8ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 2ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 2ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 2ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 2ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 1976µs, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 1901µs, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 7ms (compile: 1830µs, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 7ms (compile: 1761µs, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 2ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 2ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 2ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 2ms, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 1968µs, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 1885µs, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 1810µs, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 1644µs, render: 6ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 9ms (compile: 2ms, render: 7ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 9ms (compile: 1964µs, render: 7ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 1867µs, render: 7ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 1791µs, render: 7ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 1712µs, render: 7ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 1637µs, render: 7ms)
+ GET /api/search/properties?status=for_sale&limit=24&sort=relevance 200 in 8ms (compile: 1569µs, render: 7ms)
+{
+  "baseUrl": "http://localhost:3000",
+  "requests": 80,
+  "concurrency": 8,
+  "elapsed_ms": 137.54,
+  "rps": 581.64,
+  "latency_ms": {
+    "min": 3.44,
+    "p50": 12.31,
+    "p95": 22.15,
+    "p99": 24.88,
+    "max": 24.88
+  },
+  "failed_requests": 0,
+  "error_rate": 0,
+  "thresholds": {
+    "p95_ms": 350,
+    "max_error_rate": 0.01
+  }
+}
+[?25h

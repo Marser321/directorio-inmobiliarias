@@ -32,18 +32,39 @@ import { useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
 import Link from 'next/link'
 import { Pencil } from 'lucide-react'
 
+interface PropertyAgency {
+    name?: string
+}
+
+interface PropertyRow {
+    id: number | string
+    title: string
+    currency?: string
+    price?: number
+    neighborhood?: string
+    city?: string
+    agencies?: PropertyAgency | null
+    status?: string
+    quality_score?: number
+    boost_level?: number
+    featured_until?: string | null
+}
+
+interface AgencyOption {
+    id: number | string
+    name: string
+}
+
 interface PropertyTableProps {
-    properties: any[]
-    agencies: any[]
+    properties: PropertyRow[]
+    agencies: AgencyOption[]
 }
 
 export function PropertyTable({ properties, agencies }: PropertyTableProps) {
-    const [selectedProperty, setSelectedProperty] = useState<any>(null)
+    const [selectedProperty, setSelectedProperty] = useState<PropertyRow | null>(null)
     const [newAgencyId, setNewAgencyId] = useState<string>('')
     const [boostLevel, setBoostLevel] = useState<string>('1')
     const [featuredUntil, setFeaturedUntil] = useState<string>('')
@@ -68,8 +89,9 @@ export function PropertyTable({ properties, agencies }: PropertyTableProps) {
             toast.success('Propiedad asignada con éxito')
             setOpen(false)
             router.refresh()
-        } catch (error: any) {
-            toast.error('Error al asignar propiedad: ' + error.message)
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Error inesperado'
+            toast.error('Error al asignar propiedad: ' + message)
         } finally {
             setLoading(false)
         }
@@ -94,8 +116,9 @@ export function PropertyTable({ properties, agencies }: PropertyTableProps) {
             toast.success('Propiedad promocionada con éxito')
             setPromoteOpen(false)
             router.refresh()
-        } catch (error: any) {
-            toast.error('Error al promocionar: ' + error.message)
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Error inesperado'
+            toast.error('Error al promocionar: ' + message)
         } finally {
             setLoading(false)
         }
@@ -173,9 +196,9 @@ export function PropertyTable({ properties, agencies }: PropertyTableProps) {
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Seleccionar nueva agencia" />
                                                 </SelectTrigger>
-                                                <SelectContent>
-                                                    {agencies.map((agency) => (
-                                                        <SelectItem key={agency.id} value={agency.id}>
+                                                    <SelectContent>
+                                                        {agencies.map((agency) => (
+                                                        <SelectItem key={agency.id} value={String(agency.id)}>
                                                             {agency.name}
                                                         </SelectItem>
                                                     ))}

@@ -40,7 +40,6 @@ export function VirtualStaging({
 
     // Mouse events
     const handleMouseDown = () => setIsDragging(true);
-    const handleMouseUp = () => setIsDragging(false);
     const handleMouseMove = (e: React.MouseEvent) => {
         if (isDragging) handleMove(e.clientX);
     };

@@ -1,0 +1,19 @@
+
+> realpde@0.1.0 dev
+> next dev --webpack
+
+▲ Next.js 16.1.6 (webpack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.4:3000
+- Environments: .env.local
+
+✓ Starting...
+✓ Ready in 1239ms
+ GET /api/health/config 200 in 437ms (compile: 422ms, render: 15ms)
+ GET / 200 in 2.7s (compile: 1489ms, proxy.ts: 33ms, render: 1189ms)
+ GET /search 200 in 1695ms (compile: 1265ms, proxy.ts: 5ms, render: 425ms)
+ GET /explore 200 in 722ms (compile: 332ms, proxy.ts: 5ms, render: 385ms)
+ GET /partners 200 in 725ms (compile: 326ms, proxy.ts: 2ms, render: 397ms)
+ GET /property/1 200 in 1994ms (compile: 1173ms, proxy.ts: 3ms, render: 818ms)
+ GET /property/12 200 in 442ms (compile: 28ms, proxy.ts: 7ms, render: 407ms)
+[?25h

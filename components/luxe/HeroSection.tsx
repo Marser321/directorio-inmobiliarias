@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { CanvasSequenceAnimator } from './CanvasSequenceAnimator';
 import { GoldenDust } from './GoldenDust';
+import { trackFunnelEvent } from '@/lib/analytics/funnel';
 
 export function HeroSection() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -15,7 +16,7 @@ export function HeroSection() {
         <CanvasSequenceAnimator
             frameCount={160}
             frameUrlPattern="/sequences/mansion/frame_{index}.webp"
-            className="w-full relative bg-black"
+            className="w-full relative bg-black bg-photo-fade bg-grain-subtle"
             captions={[
                 {
                     at: 0.15,
@@ -46,6 +47,7 @@ export function HeroSection() {
         >
             {(scrollProgress: MotionValue<number>) => (
                 <>
+                    <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-black/10 via-black/30 to-black/55" />
                     <GoldenDust />
                     <HeroContent
                         scrollProgress={scrollProgress}
@@ -71,8 +73,6 @@ function HeroContent({
     const router = useRouter();
     // Opacity animation: Fade out as user starts scrolling (0 to 0.1)
     const contentOpacity = useTransform(scrollProgress, [0, 0.08], [1, 0]);
-    const navOpacity = useTransform(scrollProgress, [0, 0.1], [1, 0.8]); // Nav stays visible but dims slightly
-    const navY = useTransform(scrollProgress, [0, 0.1], [0, -20]); // Optional: Nav moves up slightly or stays? Let's keep it fixed or simple. Actually let's keep Nav visible always but maybe change transparent/blur.
 
     // Let's make the main Hero text disappear quickly so the animation takes over
     // But the Nav should stay accessible or maybe fade out if we want full immersion?
@@ -85,6 +85,11 @@ function HeroContent({
 
     const handleSearch = () => {
         if (searchQuery.trim()) {
+            void trackFunnelEvent('hero_search_submitted', {
+                metadata: {
+                    query: searchQuery.trim(),
+                },
+            });
             router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
         }
     };
@@ -119,38 +124,38 @@ function HeroContent({
                 <nav className="container mx-auto px-6 py-6 flex justify-between items-center">
                     <Link href="/" className="flex items-center group">
                         <h1 className="text-2xl md:text-3xl font-serif font-bold text-white tracking-tight transition-transform group-hover:scale-105 drop-shadow-md">
-                            Luxe<span className="text-[#D4AF37]">Estate</span>
+                            Luxe<span className="text-accent-gold-soft">Estate</span>
                         </h1>
                     </Link>
 
                     <div className="hidden md:flex items-center gap-8">
                         <Link
                             href="/search"
-                            className="text-white/90 hover:text-[#D4AF37] transition-colors font-medium text-sm tracking-wide drop-shadow-sm"
+                            className="text-white/90 hover:text-accent-gold-soft transition-colors font-medium text-sm tracking-wide drop-shadow-sm"
                         >
                             Propiedades
                         </Link>
                         <Link
                             href="/search?mode=map"
-                            className="text-white/90 hover:text-[#D4AF37] transition-colors font-medium text-sm tracking-wide drop-shadow-sm"
+                            className="text-white/90 hover:text-accent-gold-soft transition-colors font-medium text-sm tracking-wide drop-shadow-sm"
                         >
                             Mapa
                         </Link>
                         <Link
                             href="/partners"
-                            className="text-white/90 hover:text-[#D4AF37] transition-colors font-medium text-sm tracking-wide drop-shadow-sm"
+                            className="text-white/90 hover:text-accent-gold-soft transition-colors font-medium text-sm tracking-wide drop-shadow-sm"
                         >
                             Inmobiliarias
                         </Link>
                         <Link
                             href="/search?type=temporary"
-                            className="text-white/90 hover:text-[#D4AF37] transition-colors font-medium text-sm tracking-wide drop-shadow-sm"
+                            className="text-white/90 hover:text-accent-gold-soft transition-colors font-medium text-sm tracking-wide drop-shadow-sm"
                         >
                             Temporal
                         </Link>
 
                         <Link href="/partners/registro">
-                            <button className="btn-luxe px-6 py-2.5 rounded-full text-white font-bold text-sm tracking-wide shadow-lg hover:shadow-[#D4AF37]/20 border border-white/20 backdrop-blur-sm hover:bg-white/10 transition-all">
+                            <button className="btn-luxe px-6 py-2.5 rounded-full text-white font-bold text-sm tracking-wide shadow-lg border border-white/20 backdrop-blur-sm hover:bg-white/10 transition-all">
                                 Publicar
                             </button>
                         </Link>
@@ -171,9 +176,9 @@ function HeroContent({
                         transition={{ delay: 0.2, duration: 0.6 }}
                         className="flex items-center justify-center gap-2 mb-8"
                     >
-                        <div className="px-4 py-1.5 rounded-full border border-[#D4AF37]/30 bg-black/40 backdrop-blur-md flex items-center gap-2 shadow-lg">
-                            <Sparkles className="w-4 h-4 text-[#D4AF37]" />
-                            <span className="text-[#D4AF37] font-semibold tracking-widest uppercase text-xs">
+                        <div className="px-4 py-1.5 rounded-full border border-accent-gold-soft/40 bg-black/40 backdrop-blur-md flex items-center gap-2 shadow-lg">
+                            <Sparkles className="w-4 h-4 text-accent-gold-soft" />
+                            <span className="text-accent-gold-soft font-semibold tracking-widest uppercase text-xs">
                                 Real Estate de Lujo
                             </span>
                         </div>
@@ -183,7 +188,7 @@ function HeroContent({
                     <h2 className="font-serif text-6xl md:text-8xl lg:text-9xl font-bold text-white mb-8 leading-[1.1] tracking-tighter drop-shadow-2xl">
                         Encuentra tu
                         <br />
-                        <span className="bg-gradient-to-r from-[#D4AF37] via-[#F4E4BC] to-[#D4AF37] bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient">
+                        <span className="bg-gradient-to-r from-accent-gold-soft via-[#d8c79f] to-accent-gold-strong bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient">
                             hogar ideal
                         </span>
                     </h2>
@@ -208,7 +213,7 @@ function HeroContent({
                 >
                     <div className="glass-card rounded-full p-2 flex items-center shadow-2xl bg-white/10 backdrop-blur-xl border border-white/20">
                         <div className="flex items-center flex-1 pl-4">
-                            <Search className="w-5 h-5 text-[#D4AF37] mr-3" />
+                            <Search className="w-5 h-5 text-accent-gold-soft mr-3" />
                             <input
                                 type="text"
                                 value={searchQuery}
@@ -234,11 +239,11 @@ function HeroContent({
                     transition={{ delay: 0.9, duration: 0.6 }}
                     className="flex flex-wrap justify-center gap-3 mt-8"
                 >
-                    {['Vista al Mar', 'Golf & Country', 'Sunset Views', 'Chacras Privadas', 'Frente al Lago'].map((tag, i) => (
+                    {['Vista al Mar', 'Golf & Country', 'Sunset Views', 'Chacras Privadas', 'Frente al Lago'].map((tag) => (
                         <button
                             key={tag}
                             onClick={() => handleLifestyleClick(tag)}
-                            className="px-4 py-2 bg-black/40 backdrop-blur-md border border-white/20 rounded-full text-sm text-white/90 font-medium hover:bg-white/20 hover:border-[#D4AF37]/50 transition-all cursor-pointer shadow-lg"
+                            className="px-4 py-2 bg-black/40 backdrop-blur-md border border-white/20 rounded-full text-sm text-white/90 font-medium hover:bg-white/20 hover:border-accent-gold-soft/60 transition-all cursor-pointer shadow-lg"
                         >
                             {tag}
                         </button>

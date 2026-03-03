@@ -1,0 +1,12 @@
+{
+  "timestamp_utc": "2026-03-03T20:23:19.634Z",
+  "backend_target": "https://dpxpa3f5.us-east.insforge.app",
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "SQL query executed completed successfully:\n{\n  \"rows\": [\n    {\n      \"property_leads_count\": \"29\",\n      \"user_funnel_events_count\": \"234\",\n      \"agency_commission_profiles_count\": \"0\",\n      \"funnel_daily_summary_exists\": true\n    }\n  ],\n  \"rowCount\": 1,\n  \"fields\": [\n    {\n      \"name\": \"property_leads_count\",\n      \"dataTypeID\": 20\n    },\n    {\n      \"name\": \"user_funnel_events_count\",\n      \"dataTypeID\": 20\n    },\n    {\n      \"name\": \"agency_commission_profiles_count\",\n      \"dataTypeID\": 20\n    },\n    {\n      \"name\": \"funnel_daily_summary_exists\",\n      \"dataTypeID\": 16\n    }\n  ]\n}"
+      }
+    ]
+  }
+}

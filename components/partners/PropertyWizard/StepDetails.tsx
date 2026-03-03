@@ -151,12 +151,21 @@ export function StepDetails({ form }: StepDetailsProps) {
                     <span className="text-xs text-muted-foreground">(opcional)</span>
                 </label>
                 <input
-                    {...register('plot_area', { valueAsNumber: true })}
+                    {...register('plot_area', {
+                        setValueAs: (value) => {
+                            if (value === '' || value === null || value === undefined) return undefined
+                            const parsed = Number(value)
+                            return Number.isNaN(parsed) ? undefined : parsed
+                        },
+                    })}
                     type="number"
                     min={0}
                     placeholder="0"
                     className="w-full px-4 py-3 rounded-xl border border-border bg-background/50 focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all"
                 />
+                {errors.plot_area && (
+                    <span className="text-xs text-red-400 mt-1 block">{errors.plot_area.message}</span>
+                )}
             </div>
 
             {/* Amenities */}

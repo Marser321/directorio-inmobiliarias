@@ -2,8 +2,7 @@
 
 import { MapContainer, TileLayer, Circle, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-import { useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useMemo } from 'react';
 
 // Types
 interface VibeFilters {
@@ -175,10 +174,8 @@ function zoneMatchesFilters(zone: Zone, activeFilters: VibeFilters): boolean {
 
 // Component to handle map interactions
 function MapEvents({
-    onZoneHover,
     onZoneSelect
 }: {
-    onZoneHover: (zone: string | null) => void;
     onZoneSelect: (zone: string | null) => void;
 }) {
     const map = useMap();
@@ -247,7 +244,7 @@ export default function NeighborhoodExplorerMap({
                     url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
                 />
 
-                <MapEvents onZoneHover={onZoneHover} onZoneSelect={onZoneSelect} />
+                <MapEvents onZoneSelect={onZoneSelect} />
 
                 {/* Zone Circles with Heat Effect */}
                 {visibleZones.map((zone) => {

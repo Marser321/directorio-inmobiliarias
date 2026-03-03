@@ -57,7 +57,7 @@ function ActionCard({ icon: Icon, title, description, href, color, delay }: Acti
     )
 }
 
-export function WelcomeOnboarding() {
+export function WelcomeOnboarding({ propertiesEnabled = true }: { propertiesEnabled?: boolean }) {
     return (
         <div className="space-y-8 py-4">
             <motion.div
@@ -79,14 +79,25 @@ export function WelcomeOnboarding() {
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <ActionCard
-                    icon={Plus}
-                    title="Publicar mi primera propiedad"
-                    description="Sube tu primer inmueble y hazlo visible para miles de inversores."
-                    href="/partners/dashboard/new"
-                    color="gold"
-                    delay={0.2}
-                />
+                {propertiesEnabled ? (
+                    <ActionCard
+                        icon={Plus}
+                        title="Publicar mi primera propiedad"
+                        description="Sube tu primer inmueble y hazlo visible para miles de inversores."
+                        href="/partners/dashboard/new"
+                        color="gold"
+                        delay={0.2}
+                    />
+                ) : (
+                    <ActionCard
+                        icon={Plus}
+                        title="Módulo de propiedades"
+                        description="Esta opción está desactivada temporalmente para tu cuenta."
+                        href="/partners/dashboard"
+                        color="gold"
+                        delay={0.2}
+                    />
+                )}
                 <ActionCard
                     icon={UserCheck}
                     title="Completar perfil de agente"
@@ -99,7 +110,7 @@ export function WelcomeOnboarding() {
                     icon={Compass}
                     title="Explorar tendencias del mercado"
                     description="Descubre qué buscan los inversores y optimiza tu oferta."
-                    href="/tendencias"
+                    href="/explore"
                     color="emerald"
                     delay={0.4}
                 />

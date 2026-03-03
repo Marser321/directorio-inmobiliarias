@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -96,8 +97,9 @@ export function AgencyForm() {
 
             setFormData(prev => ({ ...prev, [field]: publicUrl }))
             toast.success('Imagen subida correctamente')
-        } catch (error: any) {
-            toast.error('Error subiendo imagen: ' + error.message)
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Error desconocido'
+            toast.error('Error subiendo imagen: ' + message)
         } finally {
             setUploading(false)
         }
@@ -424,7 +426,14 @@ export function AgencyForm() {
                         <div className="flex items-center gap-4">
                             {formData.logo_url ? (
                                 <div className="relative w-32 h-32 rounded-xl overflow-hidden bg-slate-100 border">
-                                    <img src={formData.logo_url} alt="Logo" className="w-full h-full object-contain p-2" />
+                                    <Image
+                                        src={formData.logo_url}
+                                        alt="Logo"
+                                        fill
+                                        unoptimized
+                                        sizes="128px"
+                                        className="w-full h-full object-contain p-2"
+                                    />
                                     <button
                                         type="button"
                                         onClick={() => setFormData(prev => ({ ...prev, logo_url: '' }))}
@@ -455,7 +464,14 @@ export function AgencyForm() {
                         <div className="flex items-center gap-4">
                             {formData.cover_image_url ? (
                                 <div className="relative w-full h-32 rounded-xl overflow-hidden bg-slate-100 border">
-                                    <img src={formData.cover_image_url} alt="Cover" className="w-full h-full object-cover" />
+                                    <Image
+                                        src={formData.cover_image_url}
+                                        alt="Cover"
+                                        fill
+                                        unoptimized
+                                        sizes="(max-width: 768px) 100vw, 50vw"
+                                        className="w-full h-full object-cover"
+                                    />
                                     <button
                                         type="button"
                                         onClick={() => setFormData(prev => ({ ...prev, cover_image_url: '' }))}

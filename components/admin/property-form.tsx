@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -16,7 +17,26 @@ import {
 import { createClient } from '@/utils/supabase/client'
 import { createPropertyAction } from '@/app/actions/create-property-action'
 import { toast } from 'sonner'
-import { Loader2, Upload, X } from 'lucide-react'
+import { Loader2, Navigation, X } from 'lucide-react'
+import Image from 'next/image'
+
+const CoordinatePickerMap = dynamic(() => import('@/components/map/CoordinatePickerMap'), {
+    ssr: false,
+    loading: () => <div className="h-64 bg-muted/50 rounded-xl animate-pulse" />,
+})
+
+interface LocationOption {
+    id: number | string
+    name: string
+    type: string
+    center_lat?: number | null
+    center_lng?: number | null
+}
+
+interface AgencyOption {
+    id: number | string
+    name: string
+}
 
 export function PropertyForm() {
     const router = useRouter()
@@ -25,20 +45,69 @@ export function PropertyForm() {
     // State
     const [loading, setLoading] = useState(false)
     const [uploading, setUploading] = useState(false)
-    const [locations, setLocations] = useState<any[]>([])
-    const [agencies, setAgencies] = useState<any[]>([])
+    const [locations, setLocations] = useState<LocationOption[]>([])
+    const [agencies, setAgencies] = useState<AgencyOption[]>([])
     const [uploadedImages, setUploadedImages] = useState<string[]>([])
+    const [currency, setCurrency] = useState<'USD' | 'UYU'>('USD')
+    const [status, setStatus] = useState<'for_sale' | 'for_rent' | 'sold' | 'rented' | 'reserved'>('for_sale')
+    const [locationId, setLocationId] = useState<string>('')
+    const [agencyId, setAgencyId] = useState<string>('')
+    const [address, setAddress] = useState('')
+    const [latitude, setLatitude] = useState<number | null>(null)
+    const [longitude, setLongitude] = useState<number | null>(null)
 
     // Load dependencies (Locations, Agencies)
     useEffect(() => {
         const loadData = async () => {
-            const { data: locs } = await supabase.from('locations').select('id, name, type').order('name')
+            const { data: locs } = await supabase
+                .from('locations')
+                .select('id, name, type, center_lat, center_lng')
+                .order('name')
             const { data: ags } = await supabase.from('agencies').select('id, name').order('name')
             if (locs) setLocations(locs)
             if (ags) setAgencies(ags)
         }
         loadData()
     }, [supabase])
+
+    const selectedLocation = locations.find((location) => location.id.toString() === locationId)
+    const hasCoordinates =
+        typeof latitude === 'number' &&
+        Number.isFinite(latitude) &&
+        typeof longitude === 'number' &&
+        Number.isFinite(longitude)
+
+    const applyLocationCentroid = () => {
+        if (
+            typeof selectedLocation?.center_lat === 'number' &&
+            Number.isFinite(selectedLocation.center_lat) &&
+            typeof selectedLocation?.center_lng === 'number' &&
+            Number.isFinite(selectedLocation.center_lng)
+        ) {
+            setLatitude(selectedLocation.center_lat)
+            setLongitude(selectedLocation.center_lng)
+            toast.success('Coordenadas ajustadas al centro de zona.')
+            return
+        }
+
+        toast.error('La zona seleccionada no tiene centro geográfico configurado.')
+    }
+
+    const handleLocationSelect = (value: string) => {
+        setLocationId(value)
+
+        const nextLocation = locations.find((location) => location.id.toString() === value)
+        if (
+            typeof nextLocation?.center_lat === 'number' &&
+            Number.isFinite(nextLocation.center_lat) &&
+            typeof nextLocation?.center_lng === 'number' &&
+            Number.isFinite(nextLocation.center_lng) &&
+            !hasCoordinates
+        ) {
+            setLatitude(nextLocation.center_lat)
+            setLongitude(nextLocation.center_lng)
+        }
+    }
 
     // Handle Image Upload
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,9 +123,9 @@ export function PropertyForm() {
                 const fileName = `${Math.random().toString(36).substring(7)}.${fileExt}`
                 const filePath = `${fileName}`
 
-                // Try uploading to 'properties' bucket
+                // Upload to the shared property media bucket
                 const { error: uploadError } = await supabase.storage
-                    .from('properties')
+                    .from('property-images')
                     .upload(filePath, file)
 
                 if (uploadError) {
@@ -65,15 +134,15 @@ export function PropertyForm() {
                 }
 
                 const { data: { publicUrl } } = supabase.storage
-                    .from('properties')
+                    .from('property-images')
                     .getPublicUrl(filePath)
 
                 newUrls.push(publicUrl)
             }
-            setUploadedImages([...uploadedImages, ...newUrls])
+            setUploadedImages((prev) => [...prev, ...newUrls])
             toast.success('Imágenes subidas')
-        } catch (error: any) {
-            toast.error('Error subiendo imágenes: Asegúrate que el bucket "properties" exista y sea público.')
+        } catch {
+            toast.error('Error subiendo imágenes: verificá que el bucket "property-images" exista y sea público.')
         } finally {
             setUploading(false)
         }
@@ -82,11 +151,35 @@ export function PropertyForm() {
     // Submit
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+
+        if (!locationId) {
+            toast.error('Selecciona una ubicación antes de crear la propiedad.')
+            return
+        }
+
+        if (!agencyId) {
+            toast.error('Selecciona una agencia antes de crear la propiedad.')
+            return
+        }
+
+        const coordinatesProvided = latitude !== null || longitude !== null
+        if (coordinatesProvided && !hasCoordinates) {
+            toast.error('Si completas coordenadas, debes ingresar latitud y longitud válidas.')
+            return
+        }
+
         setLoading(true)
 
         const formData = new FormData(e.currentTarget)
         // Add images
         formData.set('images_urls', uploadedImages.join(','))
+        formData.set('currency', currency)
+        formData.set('status', status)
+        formData.set('location_id', locationId)
+        formData.set('agency_id', agencyId)
+        formData.set('address', address.trim())
+        formData.set('latitude', hasCoordinates ? String(latitude) : '')
+        formData.set('longitude', hasCoordinates ? String(longitude) : '')
 
         const result = await createPropertyAction(formData)
 
@@ -114,7 +207,7 @@ export function PropertyForm() {
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="currency">Moneda</Label>
-                    <Select name="currency" defaultValue="USD">
+                    <Select value={currency} onValueChange={(value) => setCurrency(value as 'USD' | 'UYU')}>
                         <SelectTrigger>
                             <SelectValue />
                         </SelectTrigger>
@@ -128,8 +221,27 @@ export function PropertyForm() {
 
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
+                    <Label htmlFor="status">Estado</Label>
+                    <Select value={status} onValueChange={(value) => setStatus(value as typeof status)}>
+                        <SelectTrigger>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="for_sale">En Venta</SelectItem>
+                            <SelectItem value="for_rent">En Alquiler</SelectItem>
+                            <SelectItem value="sold">Vendida</SelectItem>
+                            <SelectItem value="rented">Alquilada</SelectItem>
+                            <SelectItem value="reserved">Reservada</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="space-y-2">
                     <Label htmlFor="location">Ubicación</Label>
-                    <Select name="location_id" required>
+                    <Select
+                        value={locationId}
+                        onValueChange={handleLocationSelect}
+                        required
+                    >
                         <SelectTrigger>
                             <SelectValue placeholder="Seleccionar..." />
                         </SelectTrigger>
@@ -143,10 +255,10 @@ export function PropertyForm() {
                     </Select>
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="agency">Agencia (Opcional)</Label>
-                    <Select name="agency_id">
+                    <Label htmlFor="agency">Agencia</Label>
+                    <Select value={agencyId} onValueChange={(value) => setAgencyId(value)} required>
                         <SelectTrigger>
-                            <SelectValue placeholder="Asignar a..." />
+                            <SelectValue placeholder="Seleccionar agencia..." />
                         </SelectTrigger>
                         <SelectContent>
                             {agencies.map((ag) => (
@@ -157,6 +269,77 @@ export function PropertyForm() {
                         </SelectContent>
                     </Select>
                 </div>
+            </div>
+
+            <div className="space-y-4 rounded-xl border border-border/70 p-4 bg-background/40">
+                <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-medium text-foreground">Ubicación precisa</p>
+                    <Button type="button" variant="outline" size="sm" onClick={applyLocationCentroid}>
+                        Usar centro de zona
+                    </Button>
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="address">Dirección / Referencia</Label>
+                    <Input
+                        id="address"
+                        value={address}
+                        onChange={(event) => setAddress(event.target.value)}
+                        placeholder="Ej: Rambla Lorenzo Batlle Pacheco 123"
+                    />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="latitude">Latitud</Label>
+                        <Input
+                            id="latitude"
+                            type="number"
+                            step="0.000001"
+                            min="-90"
+                            max="90"
+                            value={latitude ?? ''}
+                            onChange={(event) => {
+                                const value = event.target.value.trim()
+                                setLatitude(value === '' ? null : Number(value))
+                            }}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="longitude">Longitud</Label>
+                        <Input
+                            id="longitude"
+                            type="number"
+                            step="0.000001"
+                            min="-180"
+                            max="180"
+                            value={longitude ?? ''}
+                            onChange={(event) => {
+                                const value = event.target.value.trim()
+                                setLongitude(value === '' ? null : Number(value))
+                            }}
+                        />
+                    </div>
+                </div>
+
+                <div className="rounded-xl overflow-hidden border border-border">
+                    <CoordinatePickerMap
+                        latitude={latitude}
+                        longitude={longitude}
+                        onLocationSelect={(nextLat, nextLng) => {
+                            setLatitude(nextLat)
+                            setLongitude(nextLng)
+                        }}
+                        className="h-64 w-full"
+                    />
+                </div>
+
+                <p className="text-xs text-muted-foreground flex items-center gap-2">
+                    <Navigation className="w-3.5 h-3.5 text-gold" />
+                    {hasCoordinates
+                        ? `Lat ${latitude?.toFixed(6)} / Lng ${longitude?.toFixed(6)}`
+                        : 'Haz clic en el mapa para fijar la ubicación exacta.'}
+                </p>
             </div>
 
             <div className="space-y-2">
@@ -178,7 +361,7 @@ export function PropertyForm() {
                     <div className="grid grid-cols-4 gap-2 mt-2">
                         {uploadedImages.map((url, i) => (
                             <div key={i} className="relative group aspect-square rounded-md overflow-hidden bg-slate-100">
-                                <img src={url} alt="Uploaded" className="object-cover w-full h-full" />
+                                <Image src={url} alt="Uploaded" fill className="object-cover w-full h-full" unoptimized />
                                 <button
                                     type="button"
                                     onClick={() => setUploadedImages(prev => prev.filter((_, idx) => idx !== i))}
